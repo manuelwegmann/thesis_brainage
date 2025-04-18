@@ -5,6 +5,7 @@ from PIL import Image, ImageFile
 import torchvision.transforms as transforms
 from torchvision.transforms.functional import InterpolationMode
 import torch
+import glob
 import torchio as tio
 import numpy as np
 from .prep_data import full_data_load
@@ -29,10 +30,19 @@ class loader3D(Dataset):
             sessions_file = pd.read_csv(path_sessions, sep='\t')
             session1 = str(sessions_file.iloc[0]['session_id'])
             session2 = str(sessions_file.iloc[-1]['session_id'])
-            fname1 = f"{participant_id}_{session1}_run-01_T1w.nii.gz"
-            fname2 = f"{participant_id}_{session2}_run-01_T1w.nii.gz"
-            path1 = os.path.join(self.datadir, participant_id, session1, 'anat', fname1)
-            path2 = os.path.join(self.datadir, participant_id, session2, 'anat', fname2)
+            anat_dir1 = os.path.join(self.datadir, participant_id, session1, 'anat')
+            anat_dir2 = os.path.join(self.datadir, participant_id, session2, 'anat')
+            pattern1 = os.path.join(anat_dir1, f"{participant_id}_{session1}_*T1w.nii.gz")
+            pattern2 = os.path.join(anat_dir2, f"{participant_id}_{session2}_*T1w.nii.gz")
+
+            matching_files1 = glob.glob(pattern1)
+            matching_files2 = glob.glob(pattern2)
+
+            if not matching_files1 or not matching_files2:
+                print(f"Warning: No matching T1w image found for {participant_id} in session(s). Skipping.")
+                continue  # or raise an error, depending on your needs
+            path1 = matching_files1[0]
+            path2 = matching_files2[0]
             self.image_pair_paths.append((path1, path2))
 
         # Save targets for each pair
@@ -60,7 +70,7 @@ class loader3D(Dataset):
         image2 = image2.numpy().astype('float')
 
         if len(self.optional_meta) > 0:
-            meta = self.optional_meta[index, :]
+            meta = self.optional_meta[index]
             return [image1, image2, meta, target]
 
         else:
