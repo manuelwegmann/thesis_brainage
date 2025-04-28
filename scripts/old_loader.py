@@ -8,15 +8,15 @@ import torch
 import glob
 import torchio as tio
 import numpy as np
-
 from .prep_data import full_data_load
 
 
 class loader3D(Dataset):
     
-    #args: path to data, image size, target name, clean (remove single scan participants and so on), optional meta data
+    #args: path to data, image size, target name, optional meta data
     def __init__(self, args): 
-        self.demo = full_data_load(fp_oasis=args.data_directory, clean=args.clean)
+        self.demo = full_data_load() #fix full_data_load to be generalized and do all the necessary steps
+        #no self-augmentation, correct?
         
         self.image_size = args.image_size #resize images
         self.targetname = args.target_name #save target for training
@@ -30,10 +30,10 @@ class loader3D(Dataset):
             sessions_file = pd.read_csv(path_sessions, sep='\t')
             session1 = str(sessions_file.iloc[0]['session_id'])
             session2 = str(sessions_file.iloc[-1]['session_id'])
-            img_dir1 = os.path.join(self.datadir, 'derivatives', 'mriprep', participant_id, session1)
-            img_dir2 = os.path.join(self.datadir, 'derivatives', 'mriprep', participant_id, session2)
-            pattern1 = os.path.join(img_dir1, '*T1w.nii.gz')
-            pattern2 = os.path.join(img_dir2, '*T1w.nii.gz')
+            anat_dir1 = os.path.join(self.datadir, participant_id, session1, 'anat')
+            anat_dir2 = os.path.join(self.datadir, participant_id, session2, 'anat')
+            pattern1 = os.path.join(anat_dir1, f"{participant_id}_{session1}_*T1w.nii.gz")
+            pattern2 = os.path.join(anat_dir2, f"{participant_id}_{session2}_*T1w.nii.gz")
 
             matching_files1 = glob.glob(pattern1)
             matching_files2 = glob.glob(pattern2)
@@ -51,7 +51,7 @@ class loader3D(Dataset):
         if len(args.optional_meta)>0:
             self.optional_meta = np.array(self.demo[args.optional_meta])
         else:
-            self.optional_meta = np.array([])
+            self.optional_meta = ''
 
 
     def __getitem__(self, index):
@@ -79,3 +79,4 @@ class loader3D(Dataset):
         
     def __len__(self):
         return len(self.image_pair_paths)
+

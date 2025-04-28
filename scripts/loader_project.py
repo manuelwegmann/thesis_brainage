@@ -8,14 +8,16 @@ import torch
 import glob
 import torchio as tio
 import numpy as np
+
 from .prep_data import full_data_load
 
 
 class loader3D(Dataset):
     
-    #args: path to data, image size, target name, optional meta data
+    #args: path to data, image size, target name, clean (remove single scan participants and so on), optional meta data
+    #multiple image pairs per participants or not.
     def __init__(self, args): 
-        self.demo = full_data_load() #fix full_data_load to be generalized and do all the necessary steps
+        self.demo = full_data_load(fp_oasis=args.data_directory, clean=args.clean)
         
         self.image_size = args.image_size #resize images
         self.targetname = args.target_name #save target for training
@@ -27,12 +29,15 @@ class loader3D(Dataset):
             participant_id = str(row['participant_id'])
             path_sessions = os.path.join(self.datadir, participant_id, 'sessions.tsv')
             sessions_file = pd.read_csv(path_sessions, sep='\t')
+
+            session_ids = sessions_file['session_id'].tolist()
+
             session1 = str(sessions_file.iloc[0]['session_id'])
             session2 = str(sessions_file.iloc[-1]['session_id'])
             img_dir1 = os.path.join(self.datadir, 'derivatives', 'mriprep', participant_id, session1)
             img_dir2 = os.path.join(self.datadir, 'derivatives', 'mriprep', participant_id, session2)
             pattern1 = os.path.join(img_dir1, '*T1w.nii.gz')
-            pattern2 = os.path.join(img_dir1, '*T1w.nii.gz')
+            pattern2 = os.path.join(img_dir2, '*T1w.nii.gz')
 
             matching_files1 = glob.glob(pattern1)
             matching_files2 = glob.glob(pattern2)
@@ -50,7 +55,7 @@ class loader3D(Dataset):
         if len(args.optional_meta)>0:
             self.optional_meta = np.array(self.demo[args.optional_meta])
         else:
-            self.optional_meta = ''
+            self.optional_meta = np.array([])
 
 
     def __getitem__(self, index):
