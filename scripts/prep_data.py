@@ -57,36 +57,26 @@ def add_duration(df):
     return df
 
 
-#check if for a given participant_id there exists a folder with scans
-def check_folder_exists(participant_id, folder_path): #folder_path points to the OASIS-3 folder
-    path_to_subject_folder = os.path.join(folder_path, str(participant_id))
-    return os.path.exists(path_to_subject_folder)
-
-
 #check the whole dataset if any folders with data are missing
-def check_folders_exist(df, folder_path, delete_rows = True):
+def check_folders_exist(df, folder_path):
     checked_df = df
     for participant_id in checked_df['participant_id']:
-        if check_folder_exists(participant_id,folder_path)==False:
-            print(f"Warning: Folder for participant {participant_id} does not exist.")
-            if delete_rows == True:
-                index_to_drop = df[df['participant_id'] == participant_id].index
-                checked_df = checked_df.drop(index_to_drop)
-                print(f"Participant {participant_id} was deleted from the dataframe.")
-
+        if os.path.exists(os.path.join(folder_path, str(participant_id))) == False:
+            print(f"Warning: Folder for participant {participant_id} does not exist and will be deleted.")
+            index_to_drop = df[df['participant_id'] == participant_id].index
+            checked_df = checked_df.drop(index_to_drop)
     return checked_df
 
 def exclude_single_scan_participants(df):
     filtered_df = df[df['mr_sessions'] >= 2]
     excluded_df = df[df['mr_sessions'] < 2]
-    print(f'There are {filtered_df.shape[0]} subjects with at least 2 scans.')
-    print(f'There are {excluded_df.shape[0]} subjects with only 1 scan.')
+    #print(f'There are {filtered_df.shape[0]} subjects with at least 2 scans.')
+    #print(f'There are {excluded_df.shape[0]} subjects with only 1 scan.')
     return filtered_df
 
-def exclude_by_duration(df, duration_threshold = 30):
-    filtered_df = df[df['duration'] >= duration_threshold]
+def exclude_CI_participants(df):
+    filtered_df = df[(df['class_at_baseline'] == 'CN') & (df['class_at_final'] == 'CN')]
     return filtered_df
-
 
 #split dataset into female and male
 def split_by_gender(df):
@@ -99,11 +89,16 @@ def split_by_class(df):
     df_CI = df[df['class_at_baseline'] == "CI"]
     return df_CN, df_CI
 
-def full_data_load(fp_participants = '/mimer/NOBACKUP/groups/brainage/data/oasis3/participants.tsv', fp_oasis = '/mimer/NOBACKUP/groups/brainage/data/oasis3'):
-    df = load_basic_overview(file_path = fp_participants)
-    df = check_folders_exist(df=df, folder_path=fp_oasis)
-    df = add_ages(df=df, folder_path=fp_oasis)
-    df = add_duration(df)
-    df = add_classification(df)
+def full_data_load(fp_oasis = '/mimer/NOBACKUP/groups/brainage/data/oasis3', clean = False):
+    fp_participants = os.path.join(fp_oasis, 'participants.tsv')
+    df = load_basic_overview(file_path = fp_participants) #load information for all subjects
+    df = check_folders_exist(df=df, folder_path=fp_oasis) #check if subjects in participants.tsv have data folder
+    df = add_ages(df=df, folder_path=fp_oasis) #add ages at baseline #needs some fixing
+    df = add_duration(df) #add duration between first and last scan #needs some fixing
+    df = add_classification(df) #add classification at baseline and final session #needs some fixing
+    if clean == True: #clean dataset such that only participants with at least 2 scans and no CI are kept
+        df = exclude_single_scan_participants(df)
+        df = exclude_CI_participants(df)
     print(df.head())
+
     return df

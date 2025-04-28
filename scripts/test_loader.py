@@ -1,4 +1,4 @@
-from .loader import loader3D
+from .proper_loader import loader3D
 import torchio as tio
 
 # Assuming args is an object with the necessary parameters
@@ -19,6 +19,19 @@ args = Args(
 
 # Initialize the dataset
 dataset = loader3D(args)
+
+import os
+
+test_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3/derivatives/mriprep/sub-OAS30001/ses-d0129/sub-OAS30001_ses-d0129_space-MNI152NLin2009cAsym_desc-brain_T1w.nii.gz'
+
+print('Exists:', os.path.exists(test_path))
+print('Can read:', os.access(test_path, os.R_OK))
+print('List directory:')
+print(os.listdir('/mimer/NOBACKUP/groups/brainage/data/oasis3/derivatives/mriprep/sub-OAS30001/ses-d0129/'))
+print("We now test if we can load the image manually:")
+test_image = tio.ScalarImage(test_path)
+# Check if the image is loaded correctly
+print("Image shape:", test_image.shape)
 
 import matplotlib.pyplot as plt
 
