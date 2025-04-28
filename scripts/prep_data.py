@@ -9,38 +9,41 @@ def load_basic_overview(file_path): #filepath points to participants.tsv file in
     return df
 
 
-#for a given participant ID, find their actual age at baseline
-def extract_age_at_baseline(participant_id, folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3'): #extract correct age at baseline
-    file_path = os.path.join(folder_path, str(participant_id), 'sessions.tsv')  
+
+# For a given participant ID, find their actual age at baseline
+def extract_age_at_baseline(participant_id, folder_path='/mimer/NOBACKUP/groups/brainage/data/oasis3'):
+    file_path = os.path.join(folder_path, str(participant_id), 'sessions.tsv')
     return pd.read_csv(file_path, sep='\t').iloc[0]['age']
 
-
-#update whole dataset with corect ages at baseline
-def add_ages(df, folder_path):  # df is the DataFrame, and folder_path points to the OASIS-3 folder
-    df['age'] = df['participant_id'].apply(extract_age_at_baseline)
+# Update the whole dataset with correct ages at baseline
+def add_ages(df, folder_path='/mimer/NOBACKUP/groups/brainage/data/oasis3'):  # df is the DataFrame, and folder_path points to the OASIS-3 folder
+    df['age'] = df['participant_id'].apply(lambda participant_id: extract_age_at_baseline(participant_id, folder_path))
     return df
 
 
-def extract_class_at_baseline(participant_id, folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3'):
+
+# For a given participant ID, find CN/CI classification at baseline and final session
+def extract_class_at_baseline(participant_id, folder_path='/mimer/NOBACKUP/groups/brainage/data/oasis3'):
     classification = "CN"
     file_path = os.path.join(folder_path, str(participant_id), 'sessions.tsv')
     if pd.read_csv(file_path, sep='\t').iloc[0]['cognitiveyly_normal'] == False:
         classification = "CI"
     return classification
 
-def extract_class_at_final(participant_id, folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3'):
+def extract_class_at_final(participant_id, folder_path='/mimer/NOBACKUP/groups/brainage/data/oasis3'):
     classification = "CN"
     file_path = os.path.join(folder_path, str(participant_id), 'sessions.tsv')
     session_file = pd.read_csv(file_path, sep='\t')
-    if session_file.iloc[session_file.shape[0]-1]['cognitiveyly_normal'] == False:
+    if session_file.iloc[session_file.shape[0] - 1]['cognitiveyly_normal'] == False:
         classification = "CI"
     return classification
-    
 
-def add_classification(df, folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3'):
-    df['class_at_baseline'] = df['participant_id'].apply(extract_class_at_baseline)
-    df['class_at_final'] = df['participant_id'].apply(extract_class_at_final)
+# Update the whole dataset with correct classifications at baseline and final session
+def add_classification(df, folder_path='/mimer/NOBACKUP/groups/brainage/data/oasis3'):
+    df['class_at_baseline'] = df['participant_id'].apply(lambda participant_id: extract_class_at_baseline(participant_id, folder_path))
+    df['class_at_final'] = df['participant_id'].apply(lambda participant_id: extract_class_at_final(participant_id, folder_path))
     return df
+
 
 
 #extract time between first and last scan for a given participant id
@@ -52,9 +55,11 @@ def extract_duration(participant_id, folder_path = '/mimer/NOBACKUP/groups/brain
     final = sessions_file.iloc[num_sessions-1]['days_from_baseline']
     return final - baseline
 
-def add_duration(df):
-    df['duration'] = df['participant_id'].apply(extract_duration)
+# Add duration column to the DataFrame
+def add_duration(df, folder_path='/mimer/NOBACKUP/groups/brainage/data/oasis3'):
+    df['duration'] = df['participant_id'].apply(lambda participant_id: extract_duration(participant_id, folder_path))
     return df
+
 
 
 #check the whole dataset if any folders with data are missing
@@ -67,6 +72,9 @@ def check_folders_exist(df, folder_path):
             checked_df = checked_df.drop(index_to_drop)
     return checked_df
 
+
+
+#check if there are any participants with only 1 scan
 def exclude_single_scan_participants(df):
     filtered_df = df[df['mr_sessions'] >= 2]
     excluded_df = df[df['mr_sessions'] < 2]
@@ -74,20 +82,12 @@ def exclude_single_scan_participants(df):
     #print(f'There are {excluded_df.shape[0]} subjects with only 1 scan.')
     return filtered_df
 
+#check if there are any participants with CI at baseline or final session
 def exclude_CI_participants(df):
     filtered_df = df[(df['class_at_baseline'] == 'CN') & (df['class_at_final'] == 'CN')]
     return filtered_df
 
-#split dataset into female and male
-def split_by_gender(df):
-    df_male = df[df['sex'] == 'M']
-    df_female = df[df['sex'] == 'F']
-    return df_male, df_female
 
-def split_by_class(df):
-    df_CN = df[df['class_at_baseline'] == "CN"]
-    df_CI = df[df['class_at_baseline'] == "CI"]
-    return df_CN, df_CI
 
 def full_data_load(fp_oasis = '/mimer/NOBACKUP/groups/brainage/data/oasis3', clean = False):
     fp_participants = os.path.join(fp_oasis, 'participants.tsv')
@@ -102,3 +102,17 @@ def full_data_load(fp_oasis = '/mimer/NOBACKUP/groups/brainage/data/oasis3', cle
     print(df.head())
 
     return df
+
+
+
+#split dataset into female and male
+def split_by_gender(df):
+    df_male = df[df['sex'] == 'M']
+    df_female = df[df['sex'] == 'F']
+    return df_male, df_female
+
+#split dataset into CN and CI
+def split_by_class(df):
+    df_CN = df[df['class_at_baseline'] == "CN"]
+    df_CI = df[df['class_at_baseline'] == "CI"]
+    return df_CN, df_CI
