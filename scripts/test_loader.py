@@ -1,4 +1,4 @@
-from .proper_loader import loader3D
+from .loader import loader3D
 import torchio as tio
 
 # Assuming args is an object with the necessary parameters
