@@ -66,58 +66,34 @@ class Encoder3D(nn.Module):
         return x
     
 
-class CNNbasic3D(nn.Module): #todo: add conv_act and dropout arguments
-    def __init__(self, inputsize=[128, 128, 128], channels=1, n_of_blocks=4, initial_channel=16, pooling=nn.AvgPool3d, additional_feature=0):
-        super(CNNbasic3D, self).__init__()
-
-        self.feature_image = (torch.tensor(inputsize) / (2**(n_of_blocks)))
-        self.feature_channel = initial_channel
-        self.encoder = Encoder3D(in_num_ch=channels, num_block=n_of_blocks, inter_num_ch=initial_channel,  pooling=pooling)
-        self.linear = nn.Linear((self.feature_channel * (self.feature_image.prod()).type(torch.int).item()) + additional_feature, 1, bias=False)
-
-    def forward(self, x):
-        x = self.encoder(x)
-        x = x.view(x.shape[0], (self.feature_channel * (self.feature_image.prod()).type(torch.int).item()))
-        y = self.linear(x)
-        return y
-    
-
-def get_backbone(args = None):
-    assert args != None, 'arguments are required for network configurations'
-    # TODO args.optional_meta type should be list
-    n_of_meta = len(args.optional_meta)
-
-    backbone = CNNbasic3D(inputsize=args.image_size, channels=args.image_channel, additional_feature = n_of_meta)
-    linear = backbone.linear
-    backbone.linear = nn.Identity()
-
-    return backbone, linear
-    
-
-"""
-Args:
-    image_size: size of the input image
-    channels: number of channels in the input image
-    n_of_blocks: number of convolutional blocks
-    initial_channel: number of channels in the first convolutional block
-    dropout: dropout rate
-    pooling: pooling layer
-    optional_meta: number of additional features
-"""
 
 class LILAC(nn.Module):
     def __init__(self, args):
+        """
+        Args:
+            image_size: size of the input image
+            channels: number of channels in the input image
+            n_of_blocks: number of convolutional blocks
+            initial_channel: number of channels in the first convolutional block
+            dropout: dropout rate
+            pooling: pooling layer
+            optional_meta: number of additional features
+        """
         super().__init__()
-        self.backbone, self.linear = get_backbone(args)
-        self.optional_meta = len(args.optional_meta)>0
+        self.optional_meta_dim = len(args.optional_meta) if args.optional_meta else 0 #number of additional features (if any)
+        self.feature_image = (torch.tensor(args.image_size) / (2**(args.n_of_blocks))) #size of each feature map after all convolutional blocks
+        self.feature_channel = args.initial_channel #number of channels after all convolutional blocks
+        self.encoder = Encoder3D(in_num_ch=args.channels, num_block=args.n_of_blocks, inter_num_ch=args.initial_channel, dropout=args.dropout, pooling=args.pooling) #CNN for feature extraction
+        self.linear = nn.Linear(int(self.feature_channel * self.feature_image.prod().item() + int(self.optional_meta_dim)), 1, bias=False) #full connected layer w/o bias
 
-    def forward(self, x1, x2, meta = None):
-        f = self.backbone(x2) - self.backbone(x1)
-        if not self.optional_meta:
-            return self.linear(f)
+    def forward(self, x1, x2, meta = None): #feed-forward
+        f1 = self.encoder(x1) #feature extraction for the first image
+        f2 = self.encoder(x2) #feature extraction for the second image
+        fd = f2 - f1 #feature difference
+        fd = fd.view(x1.size(0), -1) #flatten the feature map
+
+        if self.optional_meta_dim == 0:
+            return self.linear(fd) #fully connected layer
         else:
-            m = meta
-            print("Feature shape:", f.shape)      # e.g., [2, 129]
-            print("Meta shape:", meta.shape)      # should be [2, 2] if you're expecting 2 meta features
-            f = torch.concat((f, m), 1)
-            return self.linear(f)
+            fd = torch.cat((fd, meta), dim=1)
+            return self.linear(fd)

@@ -1,13 +1,10 @@
 from torch.utils.data import Dataset
 import pandas as pd
 import os
-from PIL import Image, ImageFile
-import torchvision.transforms as transforms
-from torchvision.transforms.functional import InterpolationMode
-import torch
 import glob
 import torchio as tio
 import numpy as np
+import torch
 
 from .prep_data import full_data_load
 
@@ -70,7 +67,9 @@ class loader3D(Dataset):
         image2 = image2.numpy().astype('float')
 
         if len(self.optional_meta) > 0:
-            meta = self.optional_meta[index]
+            #meta = self.optional_meta[index]
+            meta = torch.tensor([self.optional_meta[index]], dtype=torch.float32)  # Note the brackets []
+            print("Meta shape:", meta.shape)
             return [image1, image2, meta, target]
 
         else:

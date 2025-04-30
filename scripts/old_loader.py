@@ -15,7 +15,7 @@ class loader3D(Dataset):
     
     #args: path to data, image size, target name, optional meta data
     def __init__(self, args): 
-        self.demo = full_data_load() #fix full_data_load to be generalized and do all the necessary steps
+        self.demo = full_data_load(fp_oasis=args.data_directory, clean=args.clean) #fix full_data_load to be generalized and do all the necessary steps
         #no self-augmentation, correct?
         
         self.image_size = args.image_size #resize images
@@ -79,4 +79,3 @@ class loader3D(Dataset):
         
     def __len__(self):
         return len(self.image_pair_paths)
-

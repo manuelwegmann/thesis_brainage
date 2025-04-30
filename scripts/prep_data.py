@@ -53,7 +53,7 @@ def extract_duration(participant_id, folder_path = '/mimer/NOBACKUP/groups/brain
     num_sessions = sessions_file.shape[0]
     baseline = sessions_file.iloc[0]['days_from_baseline']
     final = sessions_file.iloc[num_sessions-1]['days_from_baseline']
-    return final - baseline
+    return (final - baseline) / 365.0  # Convert to years
 
 # Add duration column to the DataFrame
 def add_duration(df, folder_path='/mimer/NOBACKUP/groups/brainage/data/oasis3'):

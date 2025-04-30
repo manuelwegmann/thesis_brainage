@@ -1,37 +1,27 @@
-from .loader import loader3D
+from .old_loader import loader3D
 import torchio as tio
+import os
 
 # Assuming args is an object with the necessary parameters
 class Args:
-    def __init__(self, image_size, target_name, data_directory, optional_meta):
+    def __init__(self, image_size, target_name, data_directory, optional_meta, clean):
         self.image_size = image_size
         self.target_name = target_name
         self.data_directory = data_directory
         self.optional_meta = optional_meta
+        self.clean = clean
 
 # Setup args as an instance of Args
 args = Args(
     image_size=(128, 128, 128),
     target_name='duration',
     data_directory='/mimer/NOBACKUP/groups/brainage/data/oasis3',
-    optional_meta='age'
+    optional_meta='age',
+    clean = True
 )
 
 # Initialize the dataset
 dataset = loader3D(args)
-
-import os
-
-test_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3/derivatives/mriprep/sub-OAS30001/ses-d0129/sub-OAS30001_ses-d0129_space-MNI152NLin2009cAsym_desc-brain_T1w.nii.gz'
-
-print('Exists:', os.path.exists(test_path))
-print('Can read:', os.access(test_path, os.R_OK))
-print('List directory:')
-print(os.listdir('/mimer/NOBACKUP/groups/brainage/data/oasis3/derivatives/mriprep/sub-OAS30001/ses-d0129/'))
-print("We now test if we can load the image manually:")
-test_image = tio.ScalarImage(test_path)
-# Check if the image is loaded correctly
-print("Image shape:", test_image.shape)
 
 import matplotlib.pyplot as plt
 
