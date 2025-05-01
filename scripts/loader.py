@@ -45,8 +45,19 @@ class loader3D(Dataset):
         # Save targets for each pair
         self.targets = self.demo[self.targetname].values
 
-        if len(args.optional_meta)>0:
-            self.optional_meta = np.array(self.demo[args.optional_meta])
+        #if len(args.optional_meta)>0:
+            #self.optional_meta = np.array(self.demo[args.optional_meta])
+        if len(args.optional_meta) > 0:
+            meta_df = self.demo[args.optional_meta].copy()
+
+            # Automatically convert all categorical columns to numeric using one-hot encoding
+            meta_df = pd.get_dummies(meta_df, drop_first=True)  # avoid multicollinearity
+
+            # Save column names for debugging or model inspection if needed
+            self.meta_columns = meta_df.columns.tolist()
+
+            # Convert to float32 NumPy array
+            self.optional_meta = meta_df.astype('float32').values
         else:
             self.optional_meta = np.array([])
 
@@ -67,8 +78,7 @@ class loader3D(Dataset):
         image2 = image2.numpy().astype('float')
 
         if len(self.optional_meta) > 0:
-            #meta = self.optional_meta[index]
-            meta = torch.tensor([self.optional_meta[index]], dtype=torch.float32)  # Note the brackets []
+            meta = torch.tensor(self.optional_meta[index], dtype=torch.float32)  # shape: [n_meta]
             print("Meta shape:", meta.shape)
             return [image1, image2, meta, target]
 

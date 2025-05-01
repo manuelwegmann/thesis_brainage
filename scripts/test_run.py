@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from .LILAC import LILAC  # assumes the file contains the class LILAC
+from .LILAC import get_backbone  # assumes the file contains the function get_backbone
 from .loader import loader3D  # assumes this returns a DataLoader or dataset
 from torch.utils.data import DataLoader
 
@@ -9,7 +10,7 @@ class Args:
     image_size = [32, 32, 32]  # Size of the image
     target_name = 'duration'  # Target variable
     data_directory = '/mimer/NOBACKUP/groups/brainage/data/oasis3'  # Data location
-    optional_meta = 'age'  # Optional metadata (fixed as string, no tuple)
+    optional_meta = []  # Optional metadata (fixed as string, no tuple)
     clean = True  # Whether to clean data
     n_of_blocks = 2  # Integer value (no tuple)
     channels = 1  # Number of input channels
@@ -20,6 +21,8 @@ class Args:
 
 # Setup args as an instance of Args
 args = Args()
+
+get_backbone(args)  # Call the function to get the backbone and linear layers
 
 # Device setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -36,7 +39,7 @@ subset_dataset = torch.utils.data.Subset(full_dataset, list(range(10)))
 dataloader = DataLoader(subset_dataset, batch_size=2, shuffle=False)
 
 # Training loop
-num_epochs = 10
+num_epochs = 3
 
 for epoch in range(num_epochs):
     model.train()

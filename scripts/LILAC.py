@@ -86,6 +86,7 @@ def get_backbone(args = None):
     assert args != None, 'arguments are required for network configurations'
     # TODO args.optional_meta type should be list
     n_of_meta = len(args.optional_meta)
+    print("Number of meta features:", n_of_meta)
 
     backbone = CNNbasic3D(inputsize=args.image_size, channels=args.image_channel, additional_feature = n_of_meta)
     linear = backbone.linear
