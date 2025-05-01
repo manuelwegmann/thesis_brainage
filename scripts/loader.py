@@ -13,7 +13,7 @@ class loader3D(Dataset):
     
     #args: path to data, image size, target name, clean (remove single scan participants and so on), optional meta data
     def __init__(self, args): 
-        self.demo = full_data_load(fp_oasis=args.data_directory, clean=args.clean)
+        self.demo = full_data_load(fp_oasis=args.data_directory, clean=args.clean, preprocess_cat=args.preprocess_cat)
         
         self.image_size = args.image_size #resize images
         self.targetname = args.target_name #save target for training
@@ -45,19 +45,9 @@ class loader3D(Dataset):
         # Save targets for each pair
         self.targets = self.demo[self.targetname].values
 
-        #if len(args.optional_meta)>0:
-            #self.optional_meta = np.array(self.demo[args.optional_meta])
-        if len(args.optional_meta) > 0:
-            meta_df = self.demo[args.optional_meta].copy()
+        if len(args.optional_meta)>0:
+            self.optional_meta = np.array(self.demo[args.optional_meta]).astype('float32')
 
-            # Automatically convert all categorical columns to numeric using one-hot encoding
-            meta_df = pd.get_dummies(meta_df, drop_first=True)  # avoid multicollinearity
-
-            # Save column names for debugging or model inspection if needed
-            self.meta_columns = meta_df.columns.tolist()
-
-            # Convert to float32 NumPy array
-            self.optional_meta = meta_df.astype('float32').values
         else:
             self.optional_meta = np.array([])
 

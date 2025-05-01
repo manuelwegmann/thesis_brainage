@@ -7,17 +7,18 @@ from .loader import loader3D  # assumes this returns a DataLoader or dataset
 from torch.utils.data import DataLoader
 
 class Args:
-    image_size = [32, 32, 32]  # Size of the image
+    image_size = [16, 16, 16]  # Size of the image
     target_name = 'duration'  # Target variable
     data_directory = '/mimer/NOBACKUP/groups/brainage/data/oasis3'  # Data location
-    optional_meta = []  # Optional metadata (fixed as string, no tuple)
+    optional_meta = ['mr_sessions', 'age', 'sex_F', 'sex_M']  # Optional metadata (fixed as string, no tuple)
     clean = True  # Whether to clean data
-    n_of_blocks = 2  # Integer value (no tuple)
+    n_of_blocks = 3  # Integer value (no tuple)
     channels = 1  # Number of input channels
     initial_channel = 4  # Initial channel size
     dropout = 0  # Dropout rate (correct spelling)
     pooling = nn.AvgPool3d  # Pooling function
     image_channel = 1  # Number of channels in the input image
+    preprocess_cat = True  # Preprocess categorical data (fixed as boolean)
 
 # Setup args as an instance of Args
 args = Args()
