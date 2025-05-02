@@ -10,6 +10,16 @@ from .prep_data import full_data_load
 
 
 class loader3D(Dataset):
+    """
+    Args:
+        data_directory: path to the data directory
+        clean: boolean to clean the data from single scan and CI participants
+        preprocess_cat: boolean to preprocess categorical data
+        image_size: size of the input image
+        target_name: name of the target variable
+        data_directory: path to the data directory
+        optional_meta: list of optional metadata features
+    """
     
     #args: path to data, image size, target name, clean (remove single scan participants and so on), optional meta data
     def __init__(self, args): 
