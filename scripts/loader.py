@@ -78,7 +78,7 @@ class loader3D(Dataset):
         image2 = image2.numpy().astype('float')
 
         if len(self.optional_meta) > 0:
-            meta = torch.tensor(self.optional_meta[index], dtype=torch.float32)  # shape: [n_meta]
+            meta = torch.tensor(self.optional_meta[index], dtype=torch.float32)
             print("Meta shape:", meta.shape)
             return [image1, image2, meta, target]
 
