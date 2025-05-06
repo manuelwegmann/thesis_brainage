@@ -11,6 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 import argparse
+import matplotlib.pyplot as plt
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -20,7 +21,8 @@ def parse_args():
     #data preprocessing arguments
     parser.add_argument('--clean', default=True, type=bool, help="whether to clean data from CI and single scan participants")
     parser.add_argument('--preprocess_cat', default=True, type=bool, help="whether to preprocess categorical data")
-    parser.add_argument('--image_size', default=[128,128,128], type=list, help="size of the image")
+    #parser.add_argument('--image_size', default=[128,128,128], type=list, help="size of the image")
+    parser.add_argument('--image_size', nargs=3, type=int, default=[128, 128, 128], help='Input image size as three integers (e.g. 128 128 128)')
     parser.add_argument('--image_channel', default=1, type=int, help="number of channels in the input image")
     parser.add_argument('--val_size', default=0.2, type=float, help="validation size for splitting the data")
     parser.add_argument('--test_size', default=0.2, type=float, help="test size for splitting the data")
@@ -28,8 +30,9 @@ def parse_args():
 
     #target and optional meta data arguments
     parser.add_argument('--target_name', default='duration', type=str, help="name of the target variable")
-    parser.add_argument('--optional_meta', default=['age', 'sex_F', 'sex_M'], type=list, help="list of optional meta to be used in the model")
-
+    #parser.add_argument('--optional_meta', default=['age', 'sex_F', 'sex_M'], type=list, help="list of optional meta to be used in the model")
+    parser.add_argument('--optional_meta', nargs='+', default=['age', 'sex_F', 'sex_M'], help="List of optional meta to be used in the model")
+    
     #model architecture arguments
     parser.add_argument('--n_of_blocks', default=4, type=int, help="number of blocks in the encoder")
     parser.add_argument('--initial_channel', default=16, type=int, help="initial channel size after first conv")
@@ -96,9 +99,14 @@ def train(opt, loader_train, loader_val):
     best_val_loss = float('inf')
     epochs_without_improvement = 0
     best_model_state = None
+    
+    # lists to store losses (for plot later)
+    train_losses = []
+    val_losses = []
 
     # Training loop
     for epoch in range(opt.epoch, opt.max_epoch):
+        print("We are in epoch (training): ", epoch)
         model.train()
         total_loss = 0
 
@@ -115,9 +123,15 @@ def train(opt, loader_train, loader_val):
             x1 = torch.tensor(x1).float().to(device)
             x2 = torch.tensor(x2).float().to(device)
             target = torch.tensor(target).float().unsqueeze(1).to(device)
+            print("x1:", x1.shape, x1.min().item(), x1.max().item(), x1.isnan().any().item())
+            print("x2:", x2.shape, x2.min().item(), x2.max().item(), x2.isnan().any().item())
+            print("target:", target.shape, target.min().item(), target.max().item(), target.isnan().any().item())
+            print("meta:", meta.shape, meta.min().item(), meta.max().item(), meta.isnan().any().item())
 
             # Forward pass
             output = model(x1, x2, meta)
+            if torch.isnan(x1).any() or torch.isnan(x2).any() or torch.isnan(target).any():
+                print("NaN detected in inputs")
             loss = criterion(output, target)
 
             # Backward pass and optimization
@@ -129,11 +143,13 @@ def train(opt, loader_train, loader_val):
 
         # Log the average training loss
         avg_train_loss = total_loss / len(dataloader_train)
+        train_losses.append(avg_train_loss)
         writer.add_scalar("Loss/train", avg_train_loss, epoch)
         print(f"Epoch {epoch}: Avg Train Loss = {avg_train_loss:.4f}")
 
         # Validation phase (to track validation loss)
         model.eval()
+        print("We are in validation phase")
         total_val_loss = 0
         with torch.no_grad():
             for batch in dataloader_val:
@@ -155,6 +171,7 @@ def train(opt, loader_train, loader_val):
                 total_val_loss += val_loss.item()
 
         avg_val_loss = total_val_loss / len(dataloader_val)
+        val_losses.append(avg_val_loss)
         writer.add_scalar("Loss/val", avg_val_loss, epoch)
         print(f"Epoch {epoch}: Avg Val Loss = {avg_val_loss:.4f}")
 
@@ -177,6 +194,20 @@ def train(opt, loader_train, loader_val):
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
         print("Loaded the best model.")
+    
+    # Plot and save training/validation loss curves
+    plt.figure(figsize=(10, 6))
+    plt.plot(train_losses, label='Training Loss')
+    plt.plot(val_losses, label='Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Training and Validation Loss')
+    plt.legend()
+    plt.grid(True)
+    plot_path = os.path.join(opt.output_directory, "loss_plot_trainval.png")
+    plt.savefig(plot_path)
+    plt.close()
+    print(f"Loss plot (Train/Val) saved to: {plot_path}")
 
     return model
 
@@ -193,6 +224,8 @@ def test(opt, model, loader_test):
     total_loss = 0.0
     all_targets = []
     all_preds = []
+    # list store losses (for plot later)
+    test_losses = []
 
     with torch.no_grad():
         for batch in loader_test:
@@ -215,6 +248,7 @@ def test(opt, model, loader_test):
             all_preds.append(output.cpu().numpy())
 
     avg_loss = total_loss / len(loader_test)
+    test_losses.append(avg_loss)
     print(f"Test Loss (MSE): {avg_loss:.4f}")
 
     # Optionally, save predictions and targets to CSV
@@ -228,9 +262,23 @@ def test(opt, model, loader_test):
     results_df.to_csv(results_path, index=False)
     print(f"Test results saved to {results_path}")
 
+    # Plot and save training/validation loss curves
+    plt.figure(figsize=(10, 6))
+    plt.plot(test_losses, label='Test Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Test Loss')
+    plt.legend()
+    plt.grid(True)
+    plot_path = os.path.join(opt.output_directory, "loss_plot_test.png")
+    plt.savefig(plot_path)
+    plt.close()
+    print(f"Loss plot (Test) saved to: {plot_path}")
+
 
 
 if __name__ == "__main__":
+    print("We are in main")
     opt = parse_args()
     loader_test, loader_val, loader_train = split(opt)
     trained_model = train(opt, loader_train, loader_val)

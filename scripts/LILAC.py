@@ -79,7 +79,6 @@ class CNNbasic3D(nn.Module): #todo: add conv_act and dropout arguments
 
     def forward(self, x):
         x = self.encoder(x)
-        print("Feature shape before flattening:", x.shape)  # e.g., [2, 16, 8, 8, 8]
         x = x.view(x.shape[0], (self.feature_channel * (self.feature_image.prod()).type(torch.int).item()))
         y = self.linear(x)
         return y
@@ -120,7 +119,5 @@ class LILAC(nn.Module):
             return self.linear(f)
         else:
             m = meta
-            print("Feature shape:", f.shape)      # e.g., [2, 129]
-            print("Meta shape:", meta.shape)      # should be [2, 2] if you're expecting 2 meta features
             f = torch.concat((f, m), 1)
             return self.linear(f)

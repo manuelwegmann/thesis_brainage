@@ -79,7 +79,6 @@ class loader3D(Dataset):
 
         if len(self.optional_meta) > 0:
             meta = torch.tensor(self.optional_meta[index], dtype=torch.float32)
-            print("Meta shape:", meta.shape)
             return [image1, image2, meta, target]
 
         else:

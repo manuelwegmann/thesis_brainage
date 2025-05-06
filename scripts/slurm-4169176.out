@@ -1,0 +1,40 @@
+This job can be monitored from: https://job.c3se.chalmers.se/alvis/4169176
+We are in run.py
+We are in main
+0.001
+Preprocessing of categorcial data is set to:  True
+Warning: Folder for participant sub-OAS30937 does not exist and will be deleted.
+Warning: Folder for participant sub-OAS31357 does not exist and will be deleted.
+  participant_id handedness  mr_sessions  ...  sex_F  sex_M  sex_U
+0   sub-OAS30001          R          6.0  ...   True  False  False
+1   sub-OAS30002          R          5.0  ...  False   True  False
+2   sub-OAS30003          R          7.0  ...   True  False  False
+3   sub-OAS30004          L          5.0  ...   True  False  False
+4   sub-OAS30005          R          7.0  ...   True  False  False
+
+[5 rows x 13 columns]
+Warning: No matching T1w image found for sub-OAS30042 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30643 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30659 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30797 in session(s). Skipping.
+Using device: cuda
+Last block has number of input channels: 64
+Last block has number of output channels: 16
+We are in epoch (training):  0
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/lib/python3.12/site-packages/torchio/data/image.py:248: UserWarning: Using TorchIO images without a torchio.SubjectsLoader in PyTorch >= 2.3 might have unexpected consequences, e.g., the collated batches will be instances of torchio.Subject with 5D images. Replace your PyTorch DataLoader with a torchio.SubjectsLoader so that the collated batch becomes a dictionary, as expected. See https://github.com/TorchIO-project/torchio/issues/1179 for more context about this issue.
+  warnings.warn(message, stacklevel=1)
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts/run.py:118: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  x1 = torch.tensor(x1).float().to(device)
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts/run.py:119: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  x2 = torch.tensor(x2).float().to(device)
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts/run.py:120: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  target = torch.tensor(target).float().unsqueeze(1).to(device)
+Epoch 0: Avg Train Loss = nan
+We are in validation phase
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts/run.py:152: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  x1 = torch.tensor(x1).float().to(device)
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts/run.py:153: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  x2 = torch.tensor(x2).float().to(device)
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts/run.py:154: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  target = torch.tensor(target).float().unsqueeze(1).to(device)
+slurmstepd: error: *** JOB 4169176 ON alvis1-08 CANCELLED AT 2025-05-06T16:09:28 DUE TO TIME LIMIT ***
