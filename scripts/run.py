@@ -1,21 +1,16 @@
-from .loader import loader3D
-from .model import LILAC
+from loader import loader3D
+from LILAC import LILAC
 
-from utils import *
 import torch
 import numpy as np
 import os
-import time
-import datetime
 import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
-import sys
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 import argparse
-import glob
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -27,6 +22,7 @@ def parse_args():
     parser.add_argument('--preprocess_cat', default=True, type=bool, help="whether to preprocess categorical data")
     parser.add_argument('--image_size', default=[128,128,128], type=list, help="size of the image")
     parser.add_argument('--image_channel', default=1, type=int, help="number of channels in the input image")
+    parser.add_argument('--val_size', default=0.2, type=float, help="validation size for splitting the data")
     parser.add_argument('--test_size', default=0.2, type=float, help="test size for splitting the data")
     parser.add_argument('--seed', default=42, type=int)
 
@@ -48,6 +44,7 @@ def parse_args():
     parser.add_argument('--max_epoch', default=300, type=int, help="max epoch")
     parser.add_argument('--epoch', default=0, type=int, help="starting epoch")
     parser.add_argument('--save_epoch_num', default=1, type=int, help="validate and save every N epoch")
+    parser.add_argument('--early_stopping_patience', default=10, type=int, help="early stopping patience")
 
     parser.add_argument('--output_directory', default='/mimer/NOBACKUP/groups/brainage/thesis_brainage/results', type=str, help="directory path for saving model and outputs")
 
@@ -59,21 +56,25 @@ def parse_args():
 
 def split(opt):
     """
-    Splits the data into training and testing sets.
+    Splits the data into training, validation and testing sets.
     """
     full_dataset = loader3D(opt)
+    val_size = int(opt.val_size * len(full_dataset))
     test_size = int(opt.test_size * len(full_dataset))
-    train_size = len(full_dataset) - test_size
-    train_dataset, test_dataset = random_split(full_dataset, [train_size, test_size], generator=torch.Generator().manual_seed(opt.seed))
+    train_size = len(full_dataset) - val_size - test_size
+    train_dataset, temp_dataset = random_split(full_dataset, [train_size, val_size + test_size], generator=torch.Generator().manual_seed(opt.seed))
+    val_dataset, test_dataset = random_split(temp_dataset, [val_size, test_size], generator=torch.Generator().manual_seed(opt.seed))
     loader_train = DataLoader(train_dataset, batch_size=opt.batchsize, shuffle=True)
+    loader_val = DataLoader(val_dataset, batch_size=opt.batchsize, shuffle=False)
     loader_test = DataLoader(test_dataset, batch_size=opt.batchsize, shuffle=False)
 
-    return loader_train, loader_test
+    return loader_train, loader_val, loader_test
 
 
-def train(opt, loader_train):
+
+def train(opt, loader_train, loader_val):
     """
-    Trains the model.
+    Trains the model with early stopping based on validation loss.
     """
     # Set up device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -84,16 +85,24 @@ def train(opt, loader_train):
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=opt.lr)
 
-    dataloader = loader_train
+    # Data loaders
+    dataloader_train = loader_train
+    dataloader_val = loader_val
+
     # TensorBoard writer
     writer = SummaryWriter(log_dir=os.path.join(opt.output_directory, 'logs'))
+
+    # Variables for early stopping
+    best_val_loss = float('inf')
+    epochs_without_improvement = 0
+    best_model_state = None
 
     # Training loop
     for epoch in range(opt.epoch, opt.max_epoch):
         model.train()
         total_loss = 0
 
-        for batch in dataloader:
+        for batch in dataloader_train:
             # Unpack batch
             if len(batch) == 3:
                 x1, x2, target = batch
@@ -118,15 +127,56 @@ def train(opt, loader_train):
 
             total_loss += loss.item()
 
-        #Log the average loss after each epoch
-        avg_loss = total_loss / len(dataloader)
-        writer.add_scalar("Loss/train", avg_loss, epoch)
-        print(f"Epoch {epoch}: Avg Loss = {avg_loss:.4f}")
+        # Log the average training loss
+        avg_train_loss = total_loss / len(dataloader_train)
+        writer.add_scalar("Loss/train", avg_train_loss, epoch)
+        print(f"Epoch {epoch}: Avg Train Loss = {avg_train_loss:.4f}")
 
-    # Save the trained model
-    save_path = os.path.join(opt.output_directory, "model.pth")
-    torch.save(model.state_dict(), save_path)
-    print(f"Model saved to {save_path}")
+        # Validation phase (to track validation loss)
+        model.eval()
+        total_val_loss = 0
+        with torch.no_grad():
+            for batch in dataloader_val:
+                if len(batch) == 3:
+                    x1, x2, target = batch
+                    meta = None
+                else:
+                    x1, x2, meta, target = batch
+                    meta = meta.float().to(device)
+
+                # Move tensors to device
+                x1 = torch.tensor(x1).float().to(device)
+                x2 = torch.tensor(x2).float().to(device)
+                target = torch.tensor(target).float().unsqueeze(1).to(device)
+
+                # Forward pass
+                output = model(x1, x2, meta)
+                val_loss = criterion(output, target)
+                total_val_loss += val_loss.item()
+
+        avg_val_loss = total_val_loss / len(dataloader_val)
+        writer.add_scalar("Loss/val", avg_val_loss, epoch)
+        print(f"Epoch {epoch}: Avg Val Loss = {avg_val_loss:.4f}")
+
+        # Check if we need to early stop
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            epochs_without_improvement = 0
+            best_model_state = model.state_dict()  # Save best model weights
+            print("Validation loss improved, saving model.")
+        else:
+            epochs_without_improvement += 1
+            print(f"No improvement in validation loss for {epochs_without_improvement} epochs.")
+        
+        # Early stopping check
+        if epochs_without_improvement >= opt.early_stopping_patience:
+            print(f"Early stopping triggered after {epoch} epochs.")
+            break
+
+    # Load the best model state (optional)
+    if best_model_state is not None:
+        model.load_state_dict(best_model_state)
+        print("Loaded the best model.")
 
     return model
 
@@ -178,7 +228,10 @@ def test(opt, model, loader_test):
     results_df.to_csv(results_path, index=False)
     print(f"Test results saved to {results_path}")
 
+
+
 if __name__ == "__main__":
-
-
-
+    opt = parse_args()
+    loader_test, loader_val, loader_train = split(opt)
+    trained_model = train(opt, loader_train, loader_val)
+    test(opt, trained_model, loader_test)

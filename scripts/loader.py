@@ -6,7 +6,7 @@ import torchio as tio
 import numpy as np
 import torch
 
-from .prep_data import full_data_load
+from prep_data import full_data_load
 
 
 class loader3D(Dataset):
