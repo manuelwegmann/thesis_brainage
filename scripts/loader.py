@@ -24,6 +24,7 @@ class loader3D(Dataset):
     #args: path to data, image size, target name, clean (remove single scan participants and so on), optional meta data
     def __init__(self, args): 
         self.demo = full_data_load(fp_oasis=args.data_directory, clean=args.clean, preprocess_cat=args.preprocess_cat)
+        print(f"Loaded {len(self.demo)} participants from {args.data_directory}")
         
         self.image_size = args.image_size #resize images
         self.targetname = args.target_name #save target for training

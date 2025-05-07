@@ -89,7 +89,7 @@ def exclude_CI_participants(df):
 
 
 
-def full_data_load(fp_oasis = '/mimer/NOBACKUP/groups/brainage/data/oasis3', clean = False, preprocess_cat = False):
+def full_data_load(fp_oasis = '/mimer/NOBACKUP/groups/brainage/data/oasis3', clean = False, preprocess_cat = False, drop = True):
     print("Preprocessing of categorcial data is set to: ", preprocess_cat)
     fp_participants = os.path.join(fp_oasis, 'participants.tsv')
     df = load_basic_overview(file_path = fp_participants) #load information for all subjects
@@ -103,7 +103,8 @@ def full_data_load(fp_oasis = '/mimer/NOBACKUP/groups/brainage/data/oasis3', cle
     if preprocess_cat == True: # Preprocess 'sex' column (one-hot encoding)
         sex_onehot = pd.get_dummies(df['sex'], prefix='sex').astype(float)
         df = pd.concat([df.drop(columns=['sex']), sex_onehot], axis=1)
-    df = df.dropna()
+    if drop == True:
+        df = df.dropna()
     print(df.head())
 
     return df

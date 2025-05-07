@@ -26,7 +26,7 @@ def parse_args():
     parser.add_argument('--image_channel', default=1, type=int, help="number of channels in the input image")
     parser.add_argument('--val_size', default=0.2, type=float, help="validation size for splitting the data")
     parser.add_argument('--test_size', default=0.2, type=float, help="test size for splitting the data")
-    parser.add_argument('--seed', default=42, type=int)
+    parser.add_argument('--seed', default=15, type=int)
 
     #target and optional meta data arguments
     parser.add_argument('--target_name', default='duration', type=str, help="name of the target variable")
@@ -70,6 +70,7 @@ def split(opt):
     loader_train = DataLoader(train_dataset, batch_size=opt.batchsize, shuffle=True)
     loader_val = DataLoader(val_dataset, batch_size=opt.batchsize, shuffle=False)
     loader_test = DataLoader(test_dataset, batch_size=opt.batchsize, shuffle=False)
+    print(f"Train size: {len(train_dataset)}, Validation size: {len(val_dataset)}, Test size: {len(test_dataset)}")
 
     return loader_train, loader_val, loader_test
 
@@ -120,18 +121,14 @@ def train(opt, loader_train, loader_val):
                 meta = meta.float().to(device)
 
             # Move tensors to device
-            x1 = torch.tensor(x1).float().to(device)
-            x2 = torch.tensor(x2).float().to(device)
-            target = torch.tensor(target).float().unsqueeze(1).to(device)
-            print("x1:", x1.shape, x1.min().item(), x1.max().item(), x1.isnan().any().item())
-            print("x2:", x2.shape, x2.min().item(), x2.max().item(), x2.isnan().any().item())
-            print("target:", target.shape, target.min().item(), target.max().item(), target.isnan().any().item())
-            print("meta:", meta.shape, meta.min().item(), meta.max().item(), meta.isnan().any().item())
+            x1 = x1.float().to(device)
+            x2 = x2.float().to(device)
+            target = target.float().unsqueeze(1).to(device)
 
             # Forward pass
             output = model(x1, x2, meta)
-            if torch.isnan(x1).any() or torch.isnan(x2).any() or torch.isnan(target).any():
-                print("NaN detected in inputs")
+            #if torch.isnan(x1).any() or torch.isnan(x2).any() or torch.isnan(meta).any() or torch.isnan(target).any():
+            #    print("NaN detected in inputs")
             loss = criterion(output, target)
 
             # Backward pass and optimization
@@ -149,7 +146,7 @@ def train(opt, loader_train, loader_val):
 
         # Validation phase (to track validation loss)
         model.eval()
-        print("We are in validation phase")
+        print("We are in epoch (val): ", epoch)
         total_val_loss = 0
         with torch.no_grad():
             for batch in dataloader_val:
@@ -161,9 +158,9 @@ def train(opt, loader_train, loader_val):
                     meta = meta.float().to(device)
 
                 # Move tensors to device
-                x1 = torch.tensor(x1).float().to(device)
-                x2 = torch.tensor(x2).float().to(device)
-                target = torch.tensor(target).float().unsqueeze(1).to(device)
+                x1 = x1.float().to(device)
+                x2 = x2.float().to(device)
+                target = target.float().unsqueeze(1).to(device)
 
                 # Forward pass
                 output = model(x1, x2, meta)
@@ -180,11 +177,22 @@ def train(opt, loader_train, loader_val):
             best_val_loss = avg_val_loss
             epochs_without_improvement = 0
             best_model_state = model.state_dict()  # Save best model weights
-            print("Validation loss improved, saving model.")
+
+            best_model_path = os.path.join(opt.output_directory, 'models', 'best_model.pt')
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': best_model_state,
+                'optimizer_state_dict': optimizer.state_dict(),
+                'val_loss': avg_val_loss
+            }, best_model_path)
+            
+            print("Validation loss improved, saving best model.")
+
         else:
             epochs_without_improvement += 1
             print(f"No improvement in validation loss for {epochs_without_improvement} epochs.")
-        
+
+       
         # Early stopping check
         if epochs_without_improvement >= opt.early_stopping_patience:
             print(f"Early stopping triggered after {epoch} epochs.")
@@ -204,7 +212,7 @@ def train(opt, loader_train, loader_val):
     plt.title('Training and Validation Loss')
     plt.legend()
     plt.grid(True)
-    plot_path = os.path.join(opt.output_directory, "loss_plot_trainval.png")
+    plot_path = os.path.join(opt.output_directory, 'training', 'loss_plot_trainval.png')
     plt.savefig(plot_path)
     plt.close()
     print(f"Loss plot (Train/Val) saved to: {plot_path}")
@@ -226,6 +234,8 @@ def test(opt, model, loader_test):
     all_preds = []
     # list store losses (for plot later)
     test_losses = []
+
+    print("We are in test")
 
     with torch.no_grad():
         for batch in loader_test:
@@ -261,19 +271,6 @@ def test(opt, model, loader_test):
     results_path = os.path.join(opt.output_directory, "test_results.csv")
     results_df.to_csv(results_path, index=False)
     print(f"Test results saved to {results_path}")
-
-    # Plot and save training/validation loss curves
-    plt.figure(figsize=(10, 6))
-    plt.plot(test_losses, label='Test Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Test Loss')
-    plt.legend()
-    plt.grid(True)
-    plot_path = os.path.join(opt.output_directory, "loss_plot_test.png")
-    plt.savefig(plot_path)
-    plt.close()
-    print(f"Loss plot (Test) saved to: {plot_path}")
 
 
 
