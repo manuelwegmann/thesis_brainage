@@ -110,6 +110,29 @@ def full_data_load(fp_oasis = '/mimer/NOBACKUP/groups/brainage/data/oasis3', cle
     return df
 
 
+def basic_data_load(fp_oasis = '/mimer/NOBACKUP/groups/brainage/data/oasis3', preprocess_cat = False, drop = True):
+    fp_participants = os.path.join(fp_oasis, 'participants.tsv')
+    df = load_basic_overview(file_path = fp_participants) #load information for all subjects
+    df = add_ages(df=df, folder_path=fp_oasis) #add ages at baseline
+    df = add_classification(df) #add classification at baseline and final session
+    
+    df = exclude_single_scan_participants(df) #clean dataset such that only participants with at least 2 scans and no CI are kept
+    df = exclude_CI_participants(df) #exclude CI participants
+
+    # Preprocess 'sex' column (one-hot encoding)
+    print("Categorical gender data is encoded  with 0/1")
+    sex_onehot = pd.get_dummies(df['sex'], prefix='sex').astype(float)
+    df = pd.concat([df.drop(columns=['sex']), sex_onehot], axis=1)
+
+    #drop any rows with NaN values
+    if drop == True:
+        print("Dropping rows with NaN values")
+        df = df.dropna()
+    print(df.head())
+
+    return df
+
+
 
 #split dataset into female and male
 def split_by_gender(df):
