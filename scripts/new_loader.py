@@ -13,34 +13,53 @@ import torch
 
 from prep_data import load_basic_overview
 
-def extract_session_pairs(participant_id, folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3', max_pairs = 5):
-    print(f"Extracting session pairs for participant {participant_id}...")
+def build_participant_block(participant_id, sex ,folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3'):
+    sex_M = 0
+    sex_F = 0
+    sex_U = 0
+    if sex == 'M':
+        sex_M = 1
+    if sex_F == 'F':
+        sex_F = 1
+    if sex not in ['M', 'F']:
+        sex_U = 1
     sessions_file_path = os.path.join(folder_path, str(participant_id), 'sessions.tsv')
     sessions_file = pd.read_csv(sessions_file_path, sep='\t')
     num_sessions = sessions_file.shape[0]
     if num_sessions < 2:
         print(f"Warning: Participant {participant_id} has less than 2 sessions. Skipping.")
-        return []
+        return None
     else:
-        baseline_list = [sessions_file.iloc[0]['session_id']]
-        final_list = [sessions_file.iloc[-1]['session_id']]
-        duration_list = []
-        for i in range(1, num_sessions - 1):
-            baseline_list.append(sessions_file.iloc[0]['session_id'])
-            final_list.append(sessions_file.iloc[i]['session_id'])
-            if len(baseline_list) >= max_pairs:
-                print(f"Warning: Participant {participant_id} has more than {max_pairs} sessions. Limiting to {max_pairs} pairs.")
-                break
-        for i in range(len(baseline_list)):
-            baseline_time = sessions_file.iloc[0]['days_from_baseline']
-            final_session= sessions_file[sessions_file['session_id'] == final_list[i]]
-            final_time = final_session.iloc[0]['days_from_baseline']
-            duration = (final_time - baseline_time) / 365.0  # Convert to years
-            duration_list.append(duration)
+        scan1_list = []
+        scan2_list = []
+        time_difference_list = []
+        age_list = []
+        for i in range(num_sessions-1):
+            scan1_id = sessions_file.iloc[i]['session_id']
+            scan1_session = sessions_file[sessions_file['session_id'] == scan1_id]
+            scan1_time = scan1_session.iloc[0]['days_from_baseline']
+            age = scan1_session.iloc[0]['age']
+            for j in range(i+1, num_sessions):
+                if np.isnan(age):
+                    break
+                scan2_id = sessions_file.iloc[j]['session_id']
+                scan1_list.append(scan1_id)
+                scan2_list.append(scan2_id)
+                scan2_session = sessions_file[sessions_file['session_id'] == scan2_id]
+                scan2_time = scan2_session.iloc[0]['days_from_baseline']
+                time_difference = (scan2_time - scan1_time)/365
+                time_difference_list.append(time_difference)
+                age_list.append(age)
+
         return pd.DataFrame({
-            'session_id1': baseline_list,
-            'session_id2': final_list,
-            'duration': duration_list
+            'participant_id': [participant_id] * len(scan1_list),
+            'sex_M': [sex_M] * len(scan1_list),
+            'sex_F': [sex_F] * len(scan1_list),
+            'sex_U': [sex_U] * len(scan1_list),
+            'age': age_list,
+            'session_id1': scan1_list,
+            'session_id2': scan2_list,
+            'duration': time_difference_list
         })
 
 
@@ -58,8 +77,23 @@ class loader3D(Dataset):
     """
     
     #args: path to data, image size, target name, clean (remove single scan participants and so on), optional meta data
-    def __init__(self, args): 
-        self.demo = full_data_load(fp_oasis=args.data_directory, clean=args.clean, preprocess_cat=args.preprocess_cat)
+    def __init__(self, args):
+
+        #store all blocks of pairs from one participant
+        blocks = []
+
+        df = args.participant_df #load very basic participant overview
+
+        for _, row in df.iterrows():
+            participant_id = str(row['participant_id'])
+            sex = str(row['sex'])
+            block = build_participant_block(participant_id, sex)
+            if block is not None:
+                blocks.append(block)
+
+        # Concatenate results
+        self.demo = pd.concat(blocks, ignore_index=True)
+
         print(f"Loaded {len(self.demo)} participants from {args.data_directory}")
         
         self.image_size = args.image_size #resize images
@@ -68,12 +102,11 @@ class loader3D(Dataset):
 
         # Build file path pairs
         self.image_pair_paths = []
+        valid_demo_rows = []
         for _, row in self.demo.iterrows():
             participant_id = str(row['participant_id'])
-            path_sessions = os.path.join(self.datadir, participant_id, 'sessions.tsv')
-            sessions_file = pd.read_csv(path_sessions, sep='\t')
-            session1 = str(sessions_file.iloc[0]['session_id'])
-            session2 = str(sessions_file.iloc[-1]['session_id'])
+            session1 = str(row['session_id1'])
+            session2 = str(row['session_id2'])
             img_dir1 = os.path.join(self.datadir, 'derivatives', 'mriprep', participant_id, session1)
             img_dir2 = os.path.join(self.datadir, 'derivatives', 'mriprep', participant_id, session2)
             pattern1 = os.path.join(img_dir1, '*T1w.nii.gz')
@@ -83,12 +116,14 @@ class loader3D(Dataset):
             matching_files2 = glob.glob(pattern2)
 
             if not matching_files1 or not matching_files2:
-                print(f"Warning: No matching T1w image found for {participant_id} in session(s). Skipping.")
+                print(f"Warning: No matching T1w image found for {participant_id} in session(s). Skipping.") #we need to watch out here, because if one of the two images is missing, we cannot use this pair
                 continue  # or raise an error, depending on your needs
             path1 = matching_files1[0]
             path2 = matching_files2[0]
             self.image_pair_paths.append((path1, path2))
+            valid_demo_rows.append(row)  # Save the corresponding metadata row
 
+        self.demo = pd.DataFrame(valid_demo_rows).reset_index(drop=True)
         # Save targets for each pair
         self.targets = self.demo[self.targetname].values
 
@@ -124,7 +159,3 @@ class loader3D(Dataset):
         
     def __len__(self):
         return len(self.image_pair_paths)
-
-
-test = extract_session_pairs(participant_id='sub-OAS30001')
-print(test)

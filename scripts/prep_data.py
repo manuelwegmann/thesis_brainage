@@ -4,7 +4,7 @@ import os
 
 
 #function to load standard dataset description
-def load_basic_overview(file_path): #filepath points to participants.tsv file in OASIS-3 folder
+def load_basic_overview(file_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3/participants.tsv'): #filepath points to participants.tsv file in OASIS-3 folder
     df = pd.read_csv(file_path, sep='\t')
     return df
 

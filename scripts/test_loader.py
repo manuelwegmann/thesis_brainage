@@ -1,8 +1,13 @@
 import matplotlib.pyplot as plt
 import torch
-from loader import loader3D
+from new_loader import loader3D
 import argparse
 import os
+from prep_data import load_basic_overview
+
+
+data = load_basic_overview()
+data = data[data['mr_sessions'] > 1]
 
 # Dummy argparse-like object for testing
 class Args:
@@ -10,8 +15,9 @@ class Args:
     clean = True
     preprocess_cat = True
     image_size = (128, 128, 128)  # Example size, adjust to your setup
-    target_name = 'age'  # Replace with your actual target
-    optional_meta = ['education']  # Adjust as needed
+    target_name = 'duration'  # Replace with your actual target
+    optional_meta = ['sex_F', 'sex_M', 'sex_U', 'age']  # Adjust as needed
+    participant_df = data
 
 # Path to save the output images
 output_dir = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results'
@@ -50,6 +56,7 @@ if __name__ == '__main__':
     dataset = loader3D(args)
 
     print(f"Loaded dataset with {len(dataset)} samples.")
+    """
     
     for i in range(2):  # Visualize and save first 2 samples
         print(f"\nSample {i}")
@@ -65,3 +72,4 @@ if __name__ == '__main__':
         plot_and_save_image_slices(image2, f'Sample {i} - Image2', f'sample{i}_image2')
 
     print(f"\nSaved slice images to: {os.path.abspath(output_dir)}")
+    """
