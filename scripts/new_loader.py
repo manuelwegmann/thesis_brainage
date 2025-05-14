@@ -11,7 +11,7 @@ import torchio as tio
 import numpy as np
 import torch
 
-from prep_data import add_classification, exclude_CI_participants, exclude_single_scan_participants
+from prep_data import add_classification, exclude_CI_participants, exclude_single_scan_participants, check_folders_exist
 
 def load_participants(folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3', clean = True):
     """
@@ -19,6 +19,7 @@ def load_participants(folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3
     """
     participants_file_path = os.path.join(folder_path, 'participants.tsv')
     df = pd.read_csv(participants_file_path, sep='\t')
+    df = check_folders_exist(df, folder_path)
     df = add_classification(df, folder_path)
     if clean:
         df = exclude_CI_participants(df)
@@ -148,8 +149,8 @@ class loader3D(Dataset):
 
 
     def __getitem__(self, index):
-        target = self.demo[self.targetname].iloc[index]
-
+        # Get target as float tensor
+        target = torch.tensor(self.demo[self.targetname].iloc[index], dtype=torch.float32)
 
         path1, path2 = self.image_pair_paths[index]
         image1 = tio.ScalarImage(path1)
@@ -158,16 +159,17 @@ class loader3D(Dataset):
         image1 = resize(image1)
         image2 = resize(image2)
 
-
-        image1 = image1.numpy().astype('float')
-        image2 = image2.numpy().astype('float')
+        # Convert to tensors (tio.ScalarImage().data is already a tensor)
+        # ScalarImage().numpy() converts it to numpy — we don't need that
+        image1_tensor = image1.data  # shape: (1, D, H, W)
+        image2_tensor = image2.data
 
         if len(self.optional_meta) > 0:
             meta = torch.tensor(self.optional_meta[index], dtype=torch.float32)
-            return [image1, image2, meta, target]
+            return [image1_tensor, image2_tensor, meta, target]
 
         else:
-            return [image1, image2, target]
+            return [image1_tensor, image2_tensor, target]
 
         
     def __len__(self):

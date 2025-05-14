@@ -60,20 +60,18 @@ def parse_args():
 
 def split(opt, participant_df):
     """
-    Splits the data into training, validation and testing sets.
+    Splits the data into training, validation and testing sets and returns the dataframes.
     """
-    val_size = int(opt.val_size * len(participant_df))
-    test_size = int(opt.test_size * len(participant_df))
-    train_size = len(participant_df) - val_size - test_size
-    train_dataset, temp_dataset = random_split(participant_df, [train_size, val_size + test_size], generator=torch.Generator().manual_seed(opt.seed))
-    val_dataset, test_dataset = random_split(temp_dataset, [val_size, test_size], generator=torch.Generator().manual_seed(opt.seed))
+    train_dataset, temp_dataset = train_test_split(participant_df, test_size=opt.test_size + opt.val_size, random_state=opt.seed)
+    test_relative_size = opt.test_size / (opt.test_size + opt.val_size)
+    val_dataset, test_dataset = train_test_split(temp_dataset, test_size=test_relative_size, random_state=opt.seed)
     print(f"Train size: {len(train_dataset)}, Validation size: {len(val_dataset)}, Test size: {len(test_dataset)}")
 
     return train_dataset, val_dataset, test_dataset
 
 
 
-def train(opt, loader_train, loader_val):
+def train(opt, train_dataset, val_dataset):
     """
     Trains the model with early stopping based on validation loss.
     """
@@ -87,8 +85,9 @@ def train(opt, loader_train, loader_val):
     optimizer = optim.Adam(model.parameters(), lr=opt.lr)
 
     # Data loaders
-    dataloader_train = loader_train
-    dataloader_val = loader_val
+    dataloader_train = loader3D(opt, train_dataset)
+    dataloader_val = loader3D(opt, val_dataset)
+    print(f"Train DataLoader size: {len(dataloader_train)}, Validation DataLoader size: {len(dataloader_val)}")
 
     # TensorBoard writer
     writer = SummaryWriter(log_dir=os.path.join(opt.output_directory, 'logs'))
@@ -120,7 +119,7 @@ def train(opt, loader_train, loader_val):
             # Move tensors to device
             x1 = x1.float().to(device)
             x2 = x2.float().to(device)
-            target = target.float().unsqueeze(1).to(device)
+            target = target.to(device).float()  # ✅ works whether target is (batch_size,) or already batched
 
             # Forward pass
             output = model(x1, x2, meta)
@@ -217,7 +216,7 @@ def train(opt, loader_train, loader_val):
     return model
 
 
-def test(opt, model, loader_test):
+def test(opt, model, test_dataset):
     """
     Tests the model.
     """
@@ -274,6 +273,7 @@ def test(opt, model, loader_test):
 if __name__ == "__main__":
     print("We are in main")
     opt = parse_args()
-    loader_test, loader_val, loader_train = split(opt)
-    trained_model = train(opt, loader_train, loader_val)
-    test(opt, trained_model, loader_test)
+    participant_df = load_participants() #make sure all session files exist.
+    train_dataset, val_dataset, test_dataset = split(opt, participant_df)
+    trained_model = train(opt, train_dataset, val_dataset)
+    test(opt, trained_model, test_dataset)
