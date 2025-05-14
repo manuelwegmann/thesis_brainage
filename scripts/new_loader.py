@@ -11,7 +11,22 @@ import torchio as tio
 import numpy as np
 import torch
 
-from prep_data import load_basic_overview
+from prep_data import add_classification, exclude_CI_participants, exclude_single_scan_participants
+
+def load_participants(folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3', clean = True):
+    """
+    Load the participant ids and gender from the specified folder path.
+    """
+    participants_file_path = os.path.join(folder_path, 'participants.tsv')
+    df = pd.read_csv(participants_file_path, sep='\t')
+    df = add_classification(df, folder_path)
+    if clean:
+        df = exclude_CI_participants(df)
+        df = exclude_single_scan_participants(df)
+
+    # Return only the relevant columns
+    return df[['participant_id', 'sex']]
+
 
 def build_participant_block(participant_id, sex ,folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3'):
     sex_M = 0
@@ -68,8 +83,8 @@ def build_participant_block(participant_id, sex ,folder_path = '/mimer/NOBACKUP/
 class loader3D(Dataset):
     """
     Args:
-        #clean: boolean to clean the data from single scan and CI participants
-        #preprocess_cat: boolean to preprocess categorical data
+        clean: boolean to clean the data from single scan and CI participants
+        participant_df: dataframe with basic participant data (ids and gender)
         image_size: size of the input image
         target_name: name of the target variable
         data_directory: path to the data directory
@@ -77,12 +92,12 @@ class loader3D(Dataset):
     """
     
     #args: path to data, image size, target name, clean (remove single scan participants and so on), optional meta data
-    def __init__(self, args):
+    def __init__(self, args, participant_df):
 
         #store all blocks of pairs from one participant
         blocks = []
 
-        df = args.participant_df #load very basic participant overview
+        df = participant_df #load very basic participant overview
 
         for _, row in df.iterrows():
             participant_id = str(row['participant_id'])
@@ -93,8 +108,6 @@ class loader3D(Dataset):
 
         # Concatenate results
         self.demo = pd.concat(blocks, ignore_index=True)
-
-        print(f"Loaded {len(self.demo)} participants from {args.data_directory}")
         
         self.image_size = args.image_size #resize images
         self.targetname = args.target_name #save target for training
