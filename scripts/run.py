@@ -125,6 +125,12 @@ def train(opt, loader_train, loader_val):
             x2 = x2.float().to(device)
             target = target.float().unsqueeze(1).to(device)
 
+            # Print shapes and types
+            print("x1:", type(x1), x1.shape if hasattr(x1, 'shape') else "No shape")
+            print("x2:", type(x2), x2.shape if hasattr(x2, 'shape') else "No shape")
+            print("meta:", type(meta), meta.shape if (meta is not None and hasattr(meta, 'shape')) else "None or No shape")
+            print("target:", type(target), target.shape if hasattr(target, 'shape') else "No shape")
+
             # Forward pass
             output = model(x1, x2, meta)
             #if torch.isnan(x1).any() or torch.isnan(x2).any() or torch.isnan(meta).any() or torch.isnan(target).any():

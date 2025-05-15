@@ -85,8 +85,8 @@ def train(opt, train_dataset, val_dataset):
     optimizer = optim.Adam(model.parameters(), lr=opt.lr)
 
     # Data loaders
-    dataloader_train = loader3D(opt, train_dataset)
-    dataloader_val = loader3D(opt, val_dataset)
+    dataloader_train = DataLoader(loader3D(opt, train_dataset), batch_size=opt.batchsize, shuffle=True)
+    dataloader_val = DataLoader(loader3D(opt, val_dataset), batch_size=opt.batchsize, shuffle=False)
     print(f"Train DataLoader size: {len(dataloader_train)}, Validation DataLoader size: {len(dataloader_val)}")
 
     # TensorBoard writer
@@ -115,6 +115,13 @@ def train(opt, train_dataset, val_dataset):
             else:
                 x1, x2, meta, target = batch
                 meta = meta.float().to(device)
+
+             # Print shapes and types
+            print("x1:", type(x1), x1.shape if hasattr(x1, 'shape') else "No shape")
+            print("x2:", type(x2), x2.shape if hasattr(x2, 'shape') else "No shape")
+            print("meta:", type(meta), meta.shape if (meta is not None and hasattr(meta, 'shape')) else "None or No shape")
+            print("target:", type(target), target.shape if hasattr(target, 'shape') else "No shape")
+
 
             # Move tensors to device
             x1 = x1.float().to(device)
@@ -224,6 +231,8 @@ def test(opt, model, test_dataset):
     model.to(device)
     model.eval()
 
+    dataloader_test = DataLoader(loader3D(opt, test_dataset), batch_size=opt.batchsize, shuffle=False)
+
     criterion = nn.MSELoss()
     total_loss = 0.0
     all_targets = []
@@ -234,7 +243,7 @@ def test(opt, model, test_dataset):
     print("We are in test")
 
     with torch.no_grad():
-        for batch in loader_test:
+        for batch in dataloader_test:
             if len(batch) == 3:
                 x1, x2, target = batch
                 meta = None

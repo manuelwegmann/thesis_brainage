@@ -35,7 +35,7 @@ def build_participant_block(participant_id, sex ,folder_path = '/mimer/NOBACKUP/
     sex_U = 0
     if sex == 'M':
         sex_M = 1
-    if sex_F == 'F':
+    if sex == 'F':
         sex_F = 1
     if sex not in ['M', 'F']:
         sex_U = 1
@@ -111,6 +111,7 @@ class loader3D(Dataset):
         self.demo = pd.concat(blocks, ignore_index=True)
         
         self.image_size = args.image_size #resize images
+        self.resize = tio.transforms.Resize(tuple(self.image_size))
         self.targetname = args.target_name #save target for training
         self.datadir = args.data_directory  #save data directory
 
@@ -150,17 +151,17 @@ class loader3D(Dataset):
 
     def __getitem__(self, index):
         # Get target as float tensor
-        target = torch.tensor(self.demo[self.targetname].iloc[index], dtype=torch.float32)
+        target = torch.tensor([self.demo[self.targetname].iloc[index]], dtype=torch.float32)
 
         path1, path2 = self.image_pair_paths[index]
         image1 = tio.ScalarImage(path1)
         image2 = tio.ScalarImage(path2)
-        resize = tio.transforms.Resize(tuple(self.image_size))
-        image1 = resize(image1)
-        image2 = resize(image2)
+        image1 = self.resize(image1)
+        image2 = self.resize(image2)
 
         # Convert to tensors (tio.ScalarImage().data is already a tensor)
         # ScalarImage().numpy() converts it to numpy — we don't need that
+        #
         image1_tensor = image1.data  # shape: (1, D, H, W)
         image2_tensor = image2.data
 
