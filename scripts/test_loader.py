@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import torch
-from new_loader import loader3D
+from new_loader import loader3D, load_participants
 import argparse
 import os
 from prep_data import load_basic_overview
@@ -53,23 +53,8 @@ def plot_and_save_image_slices(image, title_prefix, save_prefix):
 
 if __name__ == '__main__':
     args = Args()
-    dataset = loader3D(args)
-
-    print(f"Loaded dataset with {len(dataset)} samples.")
-    """
-    
-    for i in range(2):  # Visualize and save first 2 samples
-        print(f"\nSample {i}")
-        sample = dataset[i]
-        if len(sample) == 4:
-            image1, image2, meta, target = sample
-            print(f"Meta: {meta}, Target: {target}")
-        else:
-            image1, image2, target = sample
-            print(f"Target: {target}")
-
-        plot_and_save_image_slices(image1, f'Sample {i} - Image1', f'sample{i}_image1')
-        plot_and_save_image_slices(image2, f'Sample {i} - Image2', f'sample{i}_image2')
-
-    print(f"\nSaved slice images to: {os.path.abspath(output_dir)}")
-    """
+    df = load_participants()
+    dataset = loader3D(args,df)
+    dataset[0]
+    dataset[68]
+    dataset[1000]

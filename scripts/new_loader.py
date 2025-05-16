@@ -15,13 +15,17 @@ from prep_data import add_classification, exclude_CI_participants, exclude_singl
 
 def load_participants(folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3', clean = True):
     """
-    Load the participant ids and gender from the specified folder path.
+    Input:
+        folder_path: path to the folder containing the participants.tsv file
+        clean: boolean to clean the data from single scan and CI participants
+    Output:
+        df: dataframe with the participants and their gender
     """
     participants_file_path = os.path.join(folder_path, 'participants.tsv')
     df = pd.read_csv(participants_file_path, sep='\t')
-    df = check_folders_exist(df, folder_path)
-    df = add_classification(df, folder_path)
-    if clean:
+    df = check_folders_exist(df, folder_path) #delete participants that do not have a folder
+    df = add_classification(df, folder_path) #add classification to the dataframe
+    if clean: # Exclude participants with CI and those with only one scan
         df = exclude_CI_participants(df)
         df = exclude_single_scan_participants(df)
 
@@ -30,6 +34,16 @@ def load_participants(folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3
 
 
 def build_participant_block(participant_id, sex ,folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3'):
+    """
+    Function to extract all available image pairs of a participant. Encode gender as one-hot encoding.
+    Input:
+        participant_id: id of the participant
+        sex: gender of the participant
+        folder_path: path to the folder containing all participant folders
+    Output:
+        Dataframe where each row is a pair of images from the same participant, preprocessed.
+    """
+    #one-hot encoding
     sex_M = 0
     sex_F = 0
     sex_U = 0
@@ -39,9 +53,11 @@ def build_participant_block(participant_id, sex ,folder_path = '/mimer/NOBACKUP/
         sex_F = 1
     if sex not in ['M', 'F']:
         sex_U = 1
+    #load the sessions file for extracting sessions
     sessions_file_path = os.path.join(folder_path, str(participant_id), 'sessions.tsv')
     sessions_file = pd.read_csv(sessions_file_path, sep='\t')
     num_sessions = sessions_file.shape[0]
+    #check if the participant has at least 2 sessions
     if num_sessions < 2:
         print(f"Warning: Participant {participant_id} has less than 2 sessions. Skipping.")
         return None
@@ -50,13 +66,14 @@ def build_participant_block(participant_id, sex ,folder_path = '/mimer/NOBACKUP/
         scan2_list = []
         time_difference_list = []
         age_list = []
+        #extract pairs of sessions
         for i in range(num_sessions-1):
             scan1_id = sessions_file.iloc[i]['session_id']
             scan1_session = sessions_file[sessions_file['session_id'] == scan1_id]
             scan1_time = scan1_session.iloc[0]['days_from_baseline']
             age = scan1_session.iloc[0]['age']
             for j in range(i+1, num_sessions):
-                if np.isnan(age):
+                if np.isnan(age): #skip if age is not available
                     break
                 scan2_id = sessions_file.iloc[j]['session_id']
                 scan1_list.append(scan1_id)
@@ -107,11 +124,11 @@ class loader3D(Dataset):
             if block is not None:
                 blocks.append(block)
 
-        # Concatenate results
+        # concatenate all blocks into one dataframe
         self.demo = pd.concat(blocks, ignore_index=True)
         
         self.image_size = args.image_size #resize images
-        self.resize = tio.transforms.Resize(tuple(self.image_size))
+        self.resize = tio.transforms.Resize(tuple(self.image_size)) #safe resize transform
         self.targetname = args.target_name #save target for training
         self.datadir = args.data_directory  #save data directory
 
@@ -131,16 +148,20 @@ class loader3D(Dataset):
             matching_files2 = glob.glob(pattern2)
 
             if not matching_files1 or not matching_files2:
-                print(f"Warning: No matching T1w image found for {participant_id} in session(s). Skipping.") #we need to watch out here, because if one of the two images is missing, we cannot use this pair
-                continue  # or raise an error, depending on your needs
+                print(f"Warning: No matching T1w image found for {participant_id} in session(s). Skipping.")
+                continue #skip if no matching files are found
             path1 = matching_files1[0]
             path2 = matching_files2[0]
             self.image_pair_paths.append((path1, path2))
-            valid_demo_rows.append(row)  # Save the corresponding metadata row
+            valid_demo_rows.append(row)
 
         self.demo = pd.DataFrame(valid_demo_rows).reset_index(drop=True)
-        # Save targets for each pair
         self.targets = self.demo[self.targetname].values
+
+        #check length of loaded data
+        print(f"Loaded {len(self.image_pair_paths)} image pairs.")
+        print(f"Loaded {len(self.demo)} rows of metadata.")
+        print(f"Loaded {len(self.targets)} targets.")
 
         if len(args.optional_meta)>0:
             self.optional_meta = np.array(self.demo[args.optional_meta]).astype('float32')
@@ -152,17 +173,19 @@ class loader3D(Dataset):
     def __getitem__(self, index):
         # Get target as float tensor
         target = torch.tensor([self.demo[self.targetname].iloc[index]], dtype=torch.float32)
+        print(f"Participant ID: {self.demo['participant_id'].iloc[index]}")
+        print(f"Session ID 1: {self.demo['session_id1'].iloc[index]}")
+        print(f"Session ID 2: {self.demo['session_id2'].iloc[index]}")
 
         path1, path2 = self.image_pair_paths[index]
+        print(f"Path 1: {path1}")
+        print(f"Path 2: {path2}")
         image1 = tio.ScalarImage(path1)
         image2 = tio.ScalarImage(path2)
         image1 = self.resize(image1)
         image2 = self.resize(image2)
-
-        # Convert to tensors (tio.ScalarImage().data is already a tensor)
-        # ScalarImage().numpy() converts it to numpy — we don't need that
-        #
-        image1_tensor = image1.data  # shape: (1, D, H, W)
+        image1_tensor = image1.data
+        print(f"Image 1 shape: {image1_tensor.shape}")
         image2_tensor = image2.data
 
         if len(self.optional_meta) > 0:

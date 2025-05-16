@@ -51,6 +51,7 @@ def parse_args():
     parser.add_argument('--early_stopping_patience', default=10, type=int, help="early stopping patience")
 
     parser.add_argument('--output_directory', default='/mimer/NOBACKUP/groups/brainage/thesis_brainage/results', type=str, help="directory path for saving model and outputs")
+    parser.add_argument('--run_name', default='test_run', type=str, help="name of the run")
 
 
     args = parser.parse_args()
@@ -181,7 +182,8 @@ def train(opt, train_dataset, val_dataset):
             epochs_without_improvement = 0
             best_model_state = model.state_dict()  # Save best model weights
 
-            best_model_path = os.path.join(opt.output_directory, 'models', 'best_model.pt')
+            best_model_path = os.path.join(opt.output_directory, 'models', opt.run_name, 'best_model.pt')
+            os.makedirs(os.path.dirname(best_model_path), exist_ok=True)  # Create directories if needed
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': best_model_state,
@@ -215,7 +217,8 @@ def train(opt, train_dataset, val_dataset):
     plt.title('Training and Validation Loss')
     plt.legend()
     plt.grid(True)
-    plot_path = os.path.join(opt.output_directory, 'training', 'loss_plot_trainval.png')
+    plot_path = os.path.join(opt.output_directory, 'training', opt.run_name, 'loss_plot_trainval.png')
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)  # Create directories if needed
     plt.savefig(plot_path)
     plt.close()
     print(f"Loss plot (Train/Val) saved to: {plot_path}")
