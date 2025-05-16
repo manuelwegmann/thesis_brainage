@@ -9,7 +9,6 @@ import torch.optim as optim
 import pandas as pd
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
-from torch.utils.data import random_split
 import argparse
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -17,12 +16,10 @@ from sklearn.model_selection import train_test_split
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--data_directory', default='/mimer/NOBACKUP/groups/brainage/data/oasis3', type=str, help="name of job")
+    parser.add_argument('--data_directory', default='/mimer/NOBACKUP/groups/brainage/data/oasis3', type=str, help="directory of the data (OASIS3)")
 
     #data preprocessing arguments
     parser.add_argument('--clean', default=True, type=bool, help="whether to clean data from CI and single scan participants")
-    #parser.add_argument('--preprocess_cat', default=True, type=bool, help="whether to preprocess categorical data")
-    #parser.add_argument('--image_size', default=[128,128,128], type=list, help="size of the image")
     parser.add_argument('--image_size', nargs=3, type=int, default=[128, 128, 128], help='Input image size as three integers (e.g. 128 128 128)')
     parser.add_argument('--image_channel', default=1, type=int, help="number of channels in the input image")
     parser.add_argument('--val_size', default=0.2, type=float, help="validation size for splitting the data")
@@ -31,7 +28,6 @@ def parse_args():
 
     #target and optional meta data arguments
     parser.add_argument('--target_name', default='duration', type=str, help="name of the target variable")
-    #parser.add_argument('--optional_meta', default=['age', 'sex_F', 'sex_M'], type=list, help="list of optional meta to be used in the model")
     parser.add_argument('--optional_meta', nargs='+', default=['age', 'sex_F', 'sex_M'], help="List of optional meta to be used in the model")
     
     #model architecture arguments
@@ -62,11 +58,18 @@ def parse_args():
 def split(opt, participant_df):
     """
     Splits the data into training, validation and testing sets and returns the dataframes.
+    Input:
+        opt: options from the command line
+        participant_df: dataframe with the participants and their gender
+    Output:
+        train_dataset: dataframe with the training set (id, sex)
+        val_dataset: dataframe with the validation set (id, sex)
+        test_dataset: dataframe with the testing set (id, sex)
     """
     train_dataset, temp_dataset = train_test_split(participant_df, test_size=opt.test_size + opt.val_size, random_state=opt.seed)
     test_relative_size = opt.test_size / (opt.test_size + opt.val_size)
     val_dataset, test_dataset = train_test_split(temp_dataset, test_size=test_relative_size, random_state=opt.seed)
-    print(f"Train size: {len(train_dataset)}, Validation size: {len(val_dataset)}, Test size: {len(test_dataset)}")
+    print(f"Train size (number of participants): {len(train_dataset)}, Validation size: {len(val_dataset)}, Test size: {len(test_dataset)}")
 
     return train_dataset, val_dataset, test_dataset
 
@@ -75,8 +78,16 @@ def split(opt, participant_df):
 def train(opt, train_dataset, val_dataset):
     """
     Trains the model with early stopping based on validation loss.
+    Input:
+        opt: options from the command line
+        train_dataset: dataframe with the training set (id, sex)
+        val_dataset: dataframe with the validation set (id, sex)
+    Output:
+        model: trained model
+        plots for training and validation loss to output directory,
     """
     # Set up device
+    print("We are in train.")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
@@ -88,7 +99,6 @@ def train(opt, train_dataset, val_dataset):
     # Data loaders
     dataloader_train = DataLoader(loader3D(opt, train_dataset), batch_size=opt.batchsize, shuffle=True)
     dataloader_val = DataLoader(loader3D(opt, val_dataset), batch_size=opt.batchsize, shuffle=False)
-    print(f"Train DataLoader size: {len(dataloader_train)}, Validation DataLoader size: {len(dataloader_val)}")
 
     # TensorBoard writer
     writer = SummaryWriter(log_dir=os.path.join(opt.output_directory, 'logs'))
@@ -115,24 +125,14 @@ def train(opt, train_dataset, val_dataset):
                 meta = None
             else:
                 x1, x2, meta, target = batch
-                meta = meta.float().to(device)
-
-             # Print shapes and types
-            print("x1:", type(x1), x1.shape if hasattr(x1, 'shape') else "No shape")
-            print("x2:", type(x2), x2.shape if hasattr(x2, 'shape') else "No shape")
-            print("meta:", type(meta), meta.shape if (meta is not None and hasattr(meta, 'shape')) else "None or No shape")
-            print("target:", type(target), target.shape if hasattr(target, 'shape') else "No shape")
-
 
             # Move tensors to device
             x1 = x1.float().to(device)
             x2 = x2.float().to(device)
-            target = target.to(device).float()  # ✅ works whether target is (batch_size,) or already batched
-
+            meta = meta.float().to(device) if meta is not None else None
+            target = target.to(device).float()
             # Forward pass
             output = model(x1, x2, meta)
-            #if torch.isnan(x1).any() or torch.isnan(x2).any() or torch.isnan(meta).any() or torch.isnan(target).any():
-            #    print("NaN detected in inputs")
             loss = criterion(output, target)
 
             # Backward pass and optimization
@@ -148,7 +148,7 @@ def train(opt, train_dataset, val_dataset):
         writer.add_scalar("Loss/train", avg_train_loss, epoch)
         print(f"Epoch {epoch}: Avg Train Loss = {avg_train_loss:.4f}")
 
-        # Validation phase (to track validation loss)
+        # Validation phase
         model.eval()
         print("We are in epoch (val): ", epoch)
         total_val_loss = 0
@@ -230,6 +230,8 @@ def test(opt, model, test_dataset):
     """
     Tests the model.
     """
+    print("We are in test.")
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     model.eval()
@@ -265,7 +267,7 @@ def test(opt, model, test_dataset):
             all_targets.append(target.cpu().numpy())
             all_preds.append(output.cpu().numpy())
 
-    avg_loss = total_loss / len(loader_test)
+    avg_loss = total_loss / len(dataloader_test)
     test_losses.append(avg_loss)
     print(f"Test Loss (MSE): {avg_loss:.4f}")
 
@@ -285,7 +287,7 @@ def test(opt, model, test_dataset):
 if __name__ == "__main__":
     print("We are in main")
     opt = parse_args()
-    participant_df = load_participants() #make sure all session files exist.
+    participant_df = load_participants(folder_path = opt.data_directory, clean = opt.clean)
     train_dataset, val_dataset, test_dataset = split(opt, participant_df)
     trained_model = train(opt, train_dataset, val_dataset)
     test(opt, trained_model, test_dataset)

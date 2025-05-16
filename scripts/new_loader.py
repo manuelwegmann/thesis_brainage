@@ -101,26 +101,24 @@ def build_participant_block(participant_id, sex ,folder_path = '/mimer/NOBACKUP/
 class loader3D(Dataset):
     """
     Args:
-        clean: boolean to clean the data from single scan and CI participants
         participant_df: dataframe with basic participant data (ids and gender)
+        data_directory: path to the data directory
         image_size: size of the input image
         target_name: name of the target variable
-        data_directory: path to the data directory
         optional_meta: list of optional metadata features
     """
     
-    #args: path to data, image size, target name, clean (remove single scan participants and so on), optional meta data
     def __init__(self, args, participant_df):
 
         #store all blocks of pairs from one participant
         blocks = []
 
-        df = participant_df #load very basic participant overview
+        df = participant_df 
 
         for _, row in df.iterrows():
             participant_id = str(row['participant_id'])
             sex = str(row['sex'])
-            block = build_participant_block(participant_id, sex)
+            block = build_participant_block(participant_id, sex, folder_path=args.data_directory)
             if block is not None:
                 blocks.append(block)
 
@@ -173,19 +171,15 @@ class loader3D(Dataset):
     def __getitem__(self, index):
         # Get target as float tensor
         target = torch.tensor([self.demo[self.targetname].iloc[index]], dtype=torch.float32)
-        print(f"Participant ID: {self.demo['participant_id'].iloc[index]}")
-        print(f"Session ID 1: {self.demo['session_id1'].iloc[index]}")
-        print(f"Session ID 2: {self.demo['session_id2'].iloc[index]}")
 
         path1, path2 = self.image_pair_paths[index]
-        print(f"Path 1: {path1}")
-        print(f"Path 2: {path2}")
+
+        # Load images as torchio images
         image1 = tio.ScalarImage(path1)
         image2 = tio.ScalarImage(path2)
         image1 = self.resize(image1)
         image2 = self.resize(image2)
         image1_tensor = image1.data
-        print(f"Image 1 shape: {image1_tensor.shape}")
         image2_tensor = image2.data
 
         if len(self.optional_meta) > 0:
