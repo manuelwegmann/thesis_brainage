@@ -7,7 +7,6 @@ import os
 import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
-from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 import argparse
 import matplotlib.pyplot as plt
@@ -55,12 +54,13 @@ def parse_args():
     return args
 
 
-def split(opt, participant_df):
+def split(opt, participant_df, output_dir = None):
     """
     Splits the data into training, validation and testing sets and returns the dataframes.
     Input:
         opt: options from the command line
         participant_df: dataframe with the participants and their gender
+        output_dir: directory to save the datasets (set to None if not needed)
     Output:
         train_dataset: dataframe with the training set (id, sex)
         val_dataset: dataframe with the validation set (id, sex)
@@ -70,6 +70,12 @@ def split(opt, participant_df):
     test_relative_size = opt.test_size / (opt.test_size + opt.val_size)
     val_dataset, test_dataset = train_test_split(temp_dataset, test_size=test_relative_size, random_state=opt.seed)
     print(f"Train size (number of participants): {len(train_dataset)}, Validation size: {len(val_dataset)}, Test size: {len(test_dataset)}")
+
+    # Save the datasets to CSV files if output_dir is provided
+    if output_dir is not None:
+        train_dataset.to_csv(os.path.join(output_dir, 'train_dataset.csv'), index=False)
+        val_dataset.to_csv(os.path.join(output_dir, 'val_dataset.csv'), index=False)
+        test_dataset.to_csv(os.path.join(output_dir, 'test_dataset.csv'), index=False)
 
     return train_dataset, val_dataset, test_dataset
 
@@ -100,8 +106,6 @@ def train(opt, train_dataset, val_dataset):
     dataloader_train = DataLoader(loader3D(opt, train_dataset), batch_size=opt.batchsize, shuffle=True)
     dataloader_val = DataLoader(loader3D(opt, val_dataset), batch_size=opt.batchsize, shuffle=False)
 
-    # TensorBoard writer
-    writer = SummaryWriter(log_dir=os.path.join(opt.output_directory, 'logs'))
 
     # Variables for early stopping
     best_val_loss = float('inf')
@@ -117,6 +121,7 @@ def train(opt, train_dataset, val_dataset):
         print("We are in epoch (training): ", epoch)
         model.train()
         total_loss = 0
+        total_mae = 0
 
         for batch in dataloader_train:
             # Unpack batch
@@ -131,9 +136,14 @@ def train(opt, train_dataset, val_dataset):
             x2 = x2.float().to(device)
             meta = meta.float().to(device) if meta is not None else None
             target = target.to(device).float()
+
             # Forward pass
             output = model(x1, x2, meta)
             loss = criterion(output, target)
+
+            #calculate MAE
+            mae = torch.mean(torch.abs(output - target))
+            total_mae += mae.item()
 
             # Backward pass and optimization
             optimizer.zero_grad()
@@ -145,13 +155,17 @@ def train(opt, train_dataset, val_dataset):
         # Log the average training loss
         avg_train_loss = total_loss / len(dataloader_train)
         train_losses.append(avg_train_loss)
-        writer.add_scalar("Loss/train", avg_train_loss, epoch)
         print(f"Epoch {epoch}: Avg Train Loss = {avg_train_loss:.4f}")
+
+        avg_train_mae = total_mae / len(dataloader_train)
+        print(f"Epoch {epoch}: Avg Train MAE = {avg_train_mae:.4f}")
 
         # Validation phase
         model.eval()
         print("We are in epoch (val): ", epoch)
         total_val_loss = 0
+        total_val_mae = 0
+
         with torch.no_grad():
             for batch in dataloader_val:
                 if len(batch) == 3:
@@ -164,17 +178,23 @@ def train(opt, train_dataset, val_dataset):
                 # Move tensors to device
                 x1 = x1.float().to(device)
                 x2 = x2.float().to(device)
-                target = target.float().unsqueeze(1).to(device)
+                target = target.to(device).float()
 
                 # Forward pass
                 output = model(x1, x2, meta)
                 val_loss = criterion(output, target)
                 total_val_loss += val_loss.item()
 
+                # Calculate MAE
+                val_mae = torch.mean(torch.abs(output - target))
+                total_val_mae += val_mae.item()
+
         avg_val_loss = total_val_loss / len(dataloader_val)
         val_losses.append(avg_val_loss)
-        writer.add_scalar("Loss/val", avg_val_loss, epoch)
         print(f"Epoch {epoch}: Avg Val Loss = {avg_val_loss:.4f}")
+
+        avg_val_mae = total_val_mae / len(dataloader_val)
+        print(f"Epoch {epoch}: Avg Val MAE = {avg_val_mae:.4f}")
 
         # Check if we need to early stop
         if avg_val_loss < best_val_loss:
@@ -182,8 +202,7 @@ def train(opt, train_dataset, val_dataset):
             epochs_without_improvement = 0
             best_model_state = model.state_dict()  # Save best model weights
 
-            best_model_path = os.path.join(opt.output_directory, 'models', opt.run_name, 'best_model.pt')
-            os.makedirs(os.path.dirname(best_model_path), exist_ok=True)  # Create directories if needed
+            best_model_path = os.path.join(opt.output_directory, opt.run_name, 'best_model.pt')
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': best_model_state,
@@ -206,7 +225,70 @@ def train(opt, train_dataset, val_dataset):
     # Load the best model state (optional)
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
-        print("Loaded the best model.")
+        print("Loaded the best model. Will now calculate predicted values on train and test set.")
+
+        model.eval()
+
+        train_preds = []
+        train_targets = []
+
+        val_preds = []
+        val_targets = []
+
+        with torch.no_grad():
+            for batch in dataloader_train:
+                if len(batch) == 3:
+                    x1, x2, target = batch
+                    meta = None
+                else:
+                    x1, x2, meta, target = batch
+                    meta = meta.float().to(device)
+
+                x1 = x1.float().to(device)
+                x2 = x2.float().to(device)
+                target = target.to(device).float()
+
+                output = model(x1, x2, meta)
+
+                train_preds.append(output.cpu())
+                train_targets.append(target.cpu())
+
+            for batch in dataloader_val:
+                if len(batch) == 3:
+                    x1, x2, target = batch
+                    meta = None
+                else:
+                    x1, x2, meta, target = batch
+                    meta = meta.float().to(device)
+
+                x1 = x1.float().to(device)
+                x2 = x2.float().to(device)
+                target = target.to(device).float()
+
+                output = model(x1, x2, meta)
+
+                val_preds.append(output.cpu())
+                val_targets.append(target.cpu())
+
+            
+        # Save predictions and targets for train and val to CSV
+        targets = np.concatenate(train_targets, axis=0)
+        preds = np.concatenate(train_preds, axis=0)
+        results_df = pd.DataFrame({
+            "Target (Train)": targets.flatten(),
+            "Prediction (Train)": preds.flatten()
+        })
+        results_path = os.path.join(opt.output_directory, opt.run_name, "train_predicted_values.csv")
+        results_df.to_csv(results_path, index=False)
+
+        targets = np.concatenate(val_targets, axis=0)
+        preds = np.concatenate(val_preds, axis=0)
+        results_df = pd.DataFrame({
+            "Target (Val)": targets.flatten(),
+            "Prediction (Val)": preds.flatten()
+        })
+        results_path = os.path.join(opt.output_directory, opt.run_name, "val_predicted_values.csv")
+        results_df.to_csv(results_path, index=False)
     
     # Plot and save training/validation loss curves
     plt.figure(figsize=(10, 6))
@@ -217,8 +299,7 @@ def train(opt, train_dataset, val_dataset):
     plt.title('Training and Validation Loss')
     plt.legend()
     plt.grid(True)
-    plot_path = os.path.join(opt.output_directory, 'training', opt.run_name, 'loss_plot_trainval.png')
-    os.makedirs(os.path.dirname(plot_path), exist_ok=True)  # Create directories if needed
+    plot_path = os.path.join(opt.output_directory, opt.run_name, 'loss_plot_trainval.png')
     plt.savefig(plot_path)
     plt.close()
     print(f"Loss plot (Train/Val) saved to: {plot_path}")
@@ -278,16 +359,28 @@ def test(opt, model, test_dataset):
         "Target": targets.flatten(),
         "Prediction": preds.flatten()
     })
-    results_path = os.path.join(opt.output_directory, "test_results.csv")
+    results_path = os.path.join(opt.output_directory, opt.run_name, "test_predicted_values.csv")
     results_df.to_csv(results_path, index=False)
     print(f"Test results saved to {results_path}")
 
 
 
 if __name__ == "__main__":
-    print("We are in main")
+    print("We are in main.")
+
+    # Parse command line arguments
     opt = parse_args()
+
+    # Create output directory
+    output_dir = os.path.join(opt.output_directory, opt.run_name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Setup data
     participant_df = load_participants(folder_path = opt.data_directory, clean = opt.clean)
-    train_dataset, val_dataset, test_dataset = split(opt, participant_df)
+    train_dataset, val_dataset, test_dataset = split(opt, participant_df, output_dir = output_dir)
+
+    #train model
     trained_model = train(opt, train_dataset, val_dataset)
+
+    #test model
     test(opt, trained_model, test_dataset)

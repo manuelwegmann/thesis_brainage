@@ -14,4 +14,4 @@ source /mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/bin/activate
 
 # execute 
 cd /mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts
-python -u new_run.py --batchsize 16 --early_stopping_patience 20 --run_name 'first_proper_run_v100'
+python -u new_run.py --batchsize 16 --early_stopping_patience 10 --run_name 'run_after_changes'
