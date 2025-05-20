@@ -1,0 +1,67 @@
+This job can be monitored from: https://job.c3se.chalmers.se/alvis/4397905
+We are in main
+Warning: Folder for participant sub-OAS30937 does not exist and will be deleted.
+Warning: Folder for participant sub-OAS31357 does not exist and will be deleted.
+Train size (number of participants): 328, Validation size: 109, Test size: 110
+We are in train.
+Using device: cuda
+Last block has number of input channels: 64
+Last block has number of output channels: 16
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30137 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30137 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30659 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30659 in session(s). Skipping.
+Loaded 1451 image pairs.
+Loaded 1451 rows of metadata.
+Loaded 1451 targets.
+Loaded 448 image pairs.
+Loaded 448 rows of metadata.
+Loaded 448 targets.
+We are in epoch (training):  0
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/lib/python3.12/site-packages/torchio/data/image.py:248: UserWarning: Using TorchIO images without a torchio.SubjectsLoader in PyTorch >= 2.3 might have unexpected consequences, e.g., the collated batches will be instances of torchio.Subject with 5D images. Replace your PyTorch DataLoader with a torchio.SubjectsLoader so that the collated batch becomes a dictionary, as expected. See https://github.com/TorchIO-project/torchio/issues/1179 for more context about this issue.
+  warnings.warn(message, stacklevel=1)
+Epoch 0: Avg Train Loss = 9.2303
+We are in epoch (val):  0
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/lib/python3.12/site-packages/torch/nn/modules/loss.py:610: UserWarning: Using a target size (torch.Size([16, 1, 1])) that is different to the input size (torch.Size([16, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.
+  return F.mse_loss(input, target, reduction=self.reduction)
+Epoch 0: Avg Val Loss = 9.0185
+Validation loss improved, saving best model.
+We are in epoch (training):  1
+Epoch 1: Avg Train Loss = 5.5851
+We are in epoch (val):  1
+Epoch 1: Avg Val Loss = 9.4910
+No improvement in validation loss for 1 epochs.
+We are in epoch (training):  2
+Epoch 2: Avg Train Loss = 4.5685
+We are in epoch (val):  2
+Epoch 2: Avg Val Loss = 11.2207
+No improvement in validation loss for 2 epochs.
+We are in epoch (training):  3
+Epoch 3: Avg Train Loss = 3.9089
+We are in epoch (val):  3
+Epoch 3: Avg Val Loss = 10.2880
+No improvement in validation loss for 3 epochs.
+We are in epoch (training):  4
+Epoch 4: Avg Train Loss = 3.4696
+We are in epoch (val):  4
+Epoch 4: Avg Val Loss = 11.7012
+No improvement in validation loss for 4 epochs.
+We are in epoch (training):  5
+Epoch 5: Avg Train Loss = 3.1388
+We are in epoch (val):  5
+Epoch 5: Avg Val Loss = 12.1061
+No improvement in validation loss for 5 epochs.
+We are in epoch (training):  6
+Epoch 6: Avg Train Loss = 3.2009
+We are in epoch (val):  6
+Epoch 6: Avg Val Loss = 11.1690
+No improvement in validation loss for 6 epochs.
+We are in epoch (training):  7
+/tmp/slurmd/job4397905/slurm_script: line 17: 1299591 Killed                  python -u new_run.py --batchsize 16 --early_stopping_patience 20 --run_name 'first_proper_run'
+slurmstepd: error: Detected 1 oom_kill event in StepId=4397905.batch. Some of the step tasks have been OOM Killed.
