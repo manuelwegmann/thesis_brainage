@@ -2,8 +2,8 @@
 
 #SBATCH -A NAISS2025-22-353     # project ID found via "projinfo"
 #SBATCH -p alvis                # what partition to use (usually not necessary)
-#SBATCH -t 07:59:59           # how long time it will take to run
-#SBATCH --gpus-per-node=V100:1    # choosing no. GPUs and their type
+#SBATCH -t 01:00:00           # how long time it will take to run
+#SBATCH --gpus-per-node=A40:1    # choosing no. GPUs and their type
 
 # load modules
 module load virtualenv/20.26.2-GCCcore-13.3.0
@@ -14,4 +14,4 @@ source /mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/bin/activate
 
 # execute 
 cd /mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts
-python -u new_run.py --batchsize 16 --early_stopping_patience 10 --run_name 'run_without_age' --optional_meta sex_F sex_M
+python -u test_model_on_train.py

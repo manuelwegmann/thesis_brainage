@@ -90,7 +90,7 @@ def train(opt, train_dataset, val_dataset):
         val_dataset: dataframe with the validation set (id, sex)
     Output:
         model: trained model
-        plots for training and validation loss to output directory,
+        plots for training and validation loss to output directory, as well as predicted values for train and val
     """
     # Set up device
     print("We are in train.")
@@ -130,11 +130,11 @@ def train(opt, train_dataset, val_dataset):
                 meta = None
             else:
                 x1, x2, meta, target = batch
+                meta = meta.float().to(device)
 
             # Move tensors to device
             x1 = x1.float().to(device)
             x2 = x2.float().to(device)
-            meta = meta.float().to(device) if meta is not None else None
             target = target.to(device).float()
 
             # Forward pass
@@ -157,6 +157,7 @@ def train(opt, train_dataset, val_dataset):
         train_losses.append(avg_train_loss)
         print(f"Epoch {epoch}: Avg Train Loss = {avg_train_loss:.4f}")
 
+        # Output MAE
         avg_train_mae = total_mae / len(dataloader_train)
         print(f"Epoch {epoch}: Avg Train MAE = {avg_train_mae:.4f}")
 
@@ -189,10 +190,12 @@ def train(opt, train_dataset, val_dataset):
                 val_mae = torch.mean(torch.abs(output - target))
                 total_val_mae += val_mae.item()
 
+        # Log the average validation loss
         avg_val_loss = total_val_loss / len(dataloader_val)
         val_losses.append(avg_val_loss)
         print(f"Epoch {epoch}: Avg Val Loss = {avg_val_loss:.4f}")
 
+        # Output MAE
         avg_val_mae = total_val_mae / len(dataloader_val)
         print(f"Epoch {epoch}: Avg Val MAE = {avg_val_mae:.4f}")
 
@@ -222,7 +225,7 @@ def train(opt, train_dataset, val_dataset):
             print(f"Early stopping triggered after {epoch} epochs.")
             break
 
-    # Load the best model state (optional)
+    # Calculate predicted values on train and val set
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
         print("Loaded the best model. Will now calculate predicted values on train and test set.")
@@ -310,6 +313,13 @@ def train(opt, train_dataset, val_dataset):
 def test(opt, model, test_dataset):
     """
     Tests the model.
+    Input:
+        opt: options from the command line
+        model: trained model
+        test_dataset: dataframe with the testing set
+    Output:
+        prints out the test loss and MAE
+        saves the test results to a CSV file
     """
     print("We are in test.")
 
@@ -362,6 +372,9 @@ def test(opt, model, test_dataset):
     results_path = os.path.join(opt.output_directory, opt.run_name, "test_predicted_values.csv")
     results_df.to_csv(results_path, index=False)
     print(f"Test results saved to {results_path}")
+
+    mae = np.mean(np.abs(preds - targets))
+    print(f"Test MAE: {mae:.4f}")
 
 
 
