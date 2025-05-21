@@ -61,3 +61,25 @@ Epoch 4: Avg Val Loss = 4.5873
 Epoch 4: Avg Val MAE = 1.7060
 No improvement in validation loss for 1 epochs.
 We are in epoch (training):  5
+Epoch 5: Avg Train Loss = 3.0436
+Epoch 5: Avg Train MAE = 1.3622
+We are in epoch (val):  5
+Epoch 5: Avg Val Loss = 5.1306
+Epoch 5: Avg Val MAE = 1.7102
+No improvement in validation loss for 2 epochs.
+We are in epoch (training):  6
+Epoch 6: Avg Train Loss = 2.8383
+Epoch 6: Avg Train MAE = 1.3217
+We are in epoch (val):  6
+Epoch 6: Avg Val Loss = 4.3961
+Epoch 6: Avg Val MAE = 1.6160
+Validation loss improved, saving best model.
+We are in epoch (training):  7
+Epoch 7: Avg Train Loss = 2.9637
+Epoch 7: Avg Train MAE = 1.3379
+We are in epoch (val):  7
+Epoch 7: Avg Val Loss = 3.8125
+Epoch 7: Avg Val MAE = 1.5251
+Validation loss improved, saving best model.
+We are in epoch (training):  8
+slurmstepd: error: *** JOB 4508920 ON alvis1-08 CANCELLED AT 2025-05-20T20:30:37 DUE TO TIME LIMIT ***

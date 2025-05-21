@@ -173,6 +173,7 @@ class loader3D(Dataset):
         target = torch.tensor([self.demo[self.targetname].iloc[index]], dtype=torch.float32)
 
         path1, path2 = self.image_pair_paths[index]
+        
 
         # Load images as torchio images
         image1 = tio.ScalarImage(path1)
@@ -184,7 +185,7 @@ class loader3D(Dataset):
 
         if len(self.optional_meta) > 0:
             meta = torch.tensor(self.optional_meta[index], dtype=torch.float32)
-            return [image1_tensor, image2_tensor, meta, target]
+            return [image1_tensor, image2_tensor, meta, target], path1, path2
 
         else:
             return [image1_tensor, image2_tensor, target]

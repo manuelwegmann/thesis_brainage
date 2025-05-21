@@ -1,60 +1,98 @@
 import matplotlib.pyplot as plt
-import torch
 from new_loader import loader3D, load_participants
-import argparse
 import os
-from prep_data import load_basic_overview
+import pandas as pd
+import argparse
+import torch.nn as nn
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--data_directory', default='/mimer/NOBACKUP/groups/brainage/data/oasis3', type=str, help="directory of the data (OASIS3)")
+
+    #data preprocessing arguments
+    parser.add_argument('--clean', default=True, type=bool, help="whether to clean data from CI and single scan participants")
+    parser.add_argument('--image_size', nargs=3, type=int, default=[128, 128, 128], help='Input image size as three integers (e.g. 128 128 128)')
+    parser.add_argument('--image_channel', default=1, type=int, help="number of channels in the input image")
+    parser.add_argument('--val_size', default=0.2, type=float, help="validation size for splitting the data")
+    parser.add_argument('--test_size', default=0.2, type=float, help="test size for splitting the data")
+    parser.add_argument('--seed', default=15, type=int)
+
+    #target and optional meta data arguments
+    parser.add_argument('--target_name', default='duration', type=str, help="name of the target variable")
+    parser.add_argument('--optional_meta', nargs='+', default=['age', 'sex_F', 'sex_M'], help="List of optional meta to be used in the model")
+    
+    #model architecture arguments
+    parser.add_argument('--n_of_blocks', default=4, type=int, help="number of blocks in the encoder")
+    parser.add_argument('--initial_channel', default=16, type=int, help="initial channel size after first conv")
+    parser.add_argument('--kernel_size', default=3, type=int, help="kernel size")
+    parser.add_argument('--conv_act', default='leaky_relu', type=str, help="activation function")
+    parser.add_argument('--pooling', default=nn.AvgPool3d, type=nn.Module, help="pooling function")
+
+    #training arguments
+    parser.add_argument('--dropout', default=0, type=float, help="dropout rate")
+    parser.add_argument('--lr', default=0.001, type=float)
+    parser.add_argument('--batchsize', default=16, type=int)
+    parser.add_argument('--max_epoch', default=300, type=int, help="max epoch")
+    parser.add_argument('--epoch', default=0, type=int, help="starting epoch")
+    parser.add_argument('--save_epoch_num', default=1, type=int, help="validate and save every N epoch")
+    parser.add_argument('--early_stopping_patience', default=10, type=int, help="early stopping patience")
+
+    parser.add_argument('--output_directory', default='/mimer/NOBACKUP/groups/brainage/thesis_brainage/results', type=str, help="directory path for saving model and outputs")
 
 
-data = load_basic_overview()
-data = data[data['mr_sessions'] > 1]
+    args = parser.parse_args()
 
-# Dummy argparse-like object for testing
-class Args:
-    data_directory = '/mimer/NOBACKUP/groups/brainage/data/oasis3'  # Replace with your actual path
-    clean = True
-    preprocess_cat = True
-    image_size = (128, 128, 128)  # Example size, adjust to your setup
-    target_name = 'duration'  # Replace with your actual target
-    optional_meta = ['sex_F', 'sex_M', 'sex_U', 'age']  # Adjust as needed
-    participant_df = data
+    return args
 
-# Path to save the output images
-output_dir = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results'
+if __name__ == "__main__":
+    args = parse_args()
 
-def plot_and_save_image_slices(image, title_prefix, save_prefix):
-    # Assume image shape is (1, D, H, W)
-    image = image.squeeze()  # Remove channel dimension if present
-    d, h, w = image.shape
-    mid_slices = [d // 2, h // 2, w // 2]
-    planes = ['Axial', 'Coronal', 'Sagittal']
+    path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/run_after_changes'
+    train_participants = pd.read_csv(os.path.join(path,'train_dataset.csv'))
+    val_participants = pd.read_csv(os.path.join(path,'val_dataset.csv'))
+    test_participants = pd.read_csv(os.path.join(path,'test_dataset.csv'))
 
-    fig, axes = plt.subplots(1, 3, figsize=(12, 4))
-    for i, (plane, slice_idx) in enumerate(zip(planes, mid_slices)):
-        if plane == 'Axial':
-            slice_img = image[slice_idx, :, :]
-        elif plane == 'Coronal':
-            slice_img = image[:, slice_idx, :]
-        elif plane == 'Sagittal':
-            slice_img = image[:, :, slice_idx]
+    full_train = loader3D(args, train_participants)
+    full_val = loader3D(args, val_participants)
+    full_test = loader3D(args, test_participants)
 
-        axes[i].imshow(slice_img.T, cmap='gray', origin='lower')
-        axes[i].set_title(f'{title_prefix} - {plane}')
-        axes[i].axis('off')
+    for i in range(len(full_train.demo)):
+        ses1 = full_train.demo.iloc[i]['session_id1']
+        ses2 = full_train.demo.iloc[i]['session_id2']
+        id = full_train.demo.iloc[i]['participant_id']
+        pattern1 = os.path.join(id,ses1)
+        pattern2 = os.path.join(id,ses2)
+        a,path1,path2 = full_train[i]
+        if pattern1 in path1 and pattern2 in path2:
+            print("All good for (train) ", i)
+        else:
+            print("Warning for ", i)
+            break
 
-        # Save each plane as separate image
-        out_path = os.path.join(output_dir, f"{save_prefix}_{plane.lower()}.png")
-        plt.imsave(out_path, slice_img.T, cmap='gray', origin='lower')
+    for i in range(len(full_val.demo)):
+        ses1 = full_val.demo.iloc[i]['session_id1']
+        ses2 = full_val.demo.iloc[i]['session_id2']
+        id = full_val.demo.iloc[i]['participant_id']
+        pattern1 = os.path.join(id,ses1)
+        pattern2 = os.path.join(id,ses2)
+        a,path1,path2 = full_val[i]
+        if pattern1 in path1 and pattern2 in path2:
+            print("All good for (val) ", i)
+        else:
+            print("Warning for ", i)
+            break
 
-    # Save combined figure
-    fig_path = os.path.join(output_dir, f"{save_prefix}_combined.png")
-    plt.savefig(fig_path)
-    plt.close(fig)
+    for i in range(len(full_test.demo)):
+        ses1 = full_test.demo.iloc[i]['session_id1']
+        ses2 = full_test.demo.iloc[i]['session_id2']
+        id = full_test.demo.iloc[i]['participant_id']
+        pattern1 = os.path.join(id,ses1)
+        pattern2 = os.path.join(id,ses2)
+        a,path1,path2 = full_test[i]
+        if pattern1 in path1 and pattern2 in path2:
+            print("All good for (test) ", i)
+        else:
+            print("Warning for ", i)
+            break
 
-if __name__ == '__main__':
-    args = Args()
-    df = load_participants()
-    dataset = loader3D(args,df)
-    dataset[0]
-    dataset[68]
-    dataset[1000]

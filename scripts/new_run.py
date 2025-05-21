@@ -349,7 +349,7 @@ def test(opt, model, test_dataset):
 
             x1 = torch.tensor(x1).float().to(device)
             x2 = torch.tensor(x2).float().to(device)
-            target = torch.tensor(target).float().unsqueeze(1).to(device)
+            target = torch.tensor(target).float().to(device)
 
             output = model(x1, x2, meta)
             loss = criterion(output, target)
