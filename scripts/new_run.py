@@ -4,6 +4,7 @@ from LILAC import LILAC
 import torch
 import numpy as np
 import os
+import json
 import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
@@ -11,6 +12,7 @@ from torch.utils.data import DataLoader
 import argparse
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -34,7 +36,7 @@ def parse_args():
     parser.add_argument('--initial_channel', default=16, type=int, help="initial channel size after first conv")
     parser.add_argument('--kernel_size', default=3, type=int, help="kernel size")
     parser.add_argument('--conv_act', default='leaky_relu', type=str, help="activation function")
-    parser.add_argument('--pooling', default=nn.AvgPool3d, type=nn.Module, help="pooling function")
+    #parser.add_argument('--pooling', default=nn.AvgPool3d, type=nn.Module, help="pooling function")
 
     #training arguments
     parser.add_argument('--dropout', default=0, type=float, help="dropout rate")
@@ -52,6 +54,11 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+
+
+def save_args_to_json(args, filepath):
+    with open(filepath, 'w') as f:
+        json.dump(vars(args), f, indent=4)
 
 
 def split(opt, participant_df, output_dir = None):
@@ -347,9 +354,9 @@ def test(opt, model, test_dataset):
                 x1, x2, meta, target = batch
                 meta = meta.float().to(device)
 
-            x1 = torch.tensor(x1).float().to(device)
-            x2 = torch.tensor(x2).float().to(device)
-            target = torch.tensor(target).float().to(device)
+            x1 = x1.float().to(device)
+            x2 = x2.float().to(device)
+            target = target.float().to(device)
 
             output = model(x1, x2, meta)
             loss = criterion(output, target)
@@ -384,9 +391,12 @@ if __name__ == "__main__":
     # Parse command line arguments
     opt = parse_args()
 
-    # Create output directory
+    #create output directory
     output_dir = os.path.join(opt.output_directory, opt.run_name)
     os.makedirs(output_dir, exist_ok=True)
+
+    #save details of run
+    save_args_to_json(opt, os.path.join(output_dir,'run_details.json'))
 
     # Setup data
     participant_df = load_participants(folder_path = opt.data_directory, clean = opt.clean)

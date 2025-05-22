@@ -11,7 +11,7 @@ import torchio as tio
 import numpy as np
 import torch
 
-from prep_data import add_classification, exclude_CI_participants, exclude_single_scan_participants, check_folders_exist
+from thesis_brainage.archive.prep_data import add_classification, exclude_CI_participants, exclude_single_scan_participants, check_folders_exist
 
 def load_participants(folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3', clean = True):
     """
@@ -185,7 +185,7 @@ class loader3D(Dataset):
 
         if len(self.optional_meta) > 0:
             meta = torch.tensor(self.optional_meta[index], dtype=torch.float32)
-            return [image1_tensor, image2_tensor, meta, target], path1, path2
+            return [image1_tensor, image2_tensor, meta, target]
 
         else:
             return [image1_tensor, image2_tensor, target]

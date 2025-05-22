@@ -39,7 +39,7 @@ class Encoder3D(nn.Module):
     """
     Building multiple convolutional blocks together for feature extraction.
     """
-    def __init__(self, in_num_ch, num_block, inter_num_ch, kernel_size, conv_act, dropout,  pooling): #add dropout argument vs original LILAC
+    def __init__(self, in_num_ch, num_block, inter_num_ch, kernel_size, conv_act, dropout,  pooling=nn.AvgPool3d): #add dropout argument vs original LILAC
         """
         inter_num_ch: base number of output channels for the first block.
         """
@@ -87,7 +87,7 @@ class CNNbasic3D(nn.Module): #todo: add conv_act and dropout arguments
 def get_backbone(args = None):
     n_of_meta = len(args.optional_meta)
 
-    backbone = CNNbasic3D(inputsize=args.image_size, channels=args.image_channel, n_of_blocks=args.n_of_blocks, initial_channel= args.initial_channel, kernel_size=args.kernel_size, conv_act=args.conv_act, dropout=args.dropout, pooling=args.pooling, additional_feature = n_of_meta)
+    backbone = CNNbasic3D(inputsize=args.image_size, channels=args.image_channel, n_of_blocks=args.n_of_blocks, initial_channel= args.initial_channel, kernel_size=args.kernel_size, conv_act=args.conv_act, dropout=args.dropout, pooling=nn.AvgPool3d, additional_feature = n_of_meta)
     linear = backbone.linear
     backbone.linear = nn.Identity()
 

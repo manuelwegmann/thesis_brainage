@@ -1,0 +1,166 @@
+This job can be monitored from: https://job.c3se.chalmers.se/alvis/4519929
+We are in main.
+Warning: Folder for participant sub-OAS30937 does not exist and will be deleted.
+Warning: Folder for participant sub-OAS31357 does not exist and will be deleted.
+Train size (number of participants): 328, Validation size: 109, Test size: 110
+We are in train.
+Using device: cuda
+Last block has number of input channels: 64
+Last block has number of output channels: 16
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30659 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30659 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30797 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30797 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30797 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30042 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30137 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30137 in session(s). Skipping.
+Loaded 1435 image pairs.
+Loaded 1435 rows of metadata.
+Loaded 1435 targets.
+Warning: No matching T1w image found for sub-OAS30643 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30643 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30643 in session(s). Skipping.
+Loaded 502 image pairs.
+Loaded 502 rows of metadata.
+Loaded 502 targets.
+We are in epoch (training):  0
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/lib/python3.12/site-packages/torchio/data/image.py:248: UserWarning: Using TorchIO images without a torchio.SubjectsLoader in PyTorch >= 2.3 might have unexpected consequences, e.g., the collated batches will be instances of torchio.Subject with 5D images. Replace your PyTorch DataLoader with a torchio.SubjectsLoader so that the collated batch becomes a dictionary, as expected. See https://github.com/TorchIO-project/torchio/issues/1179 for more context about this issue.
+  warnings.warn(message, stacklevel=1)
+Epoch 0: Avg Train Loss = 10.5161
+Epoch 0: Avg Train MAE = 2.4635
+We are in epoch (val):  0
+Epoch 0: Avg Val Loss = 9.2634
+Epoch 0: Avg Val MAE = 2.3272
+Validation loss improved, saving best model.
+We are in epoch (training):  1
+Epoch 1: Avg Train Loss = 5.3019
+Epoch 1: Avg Train MAE = 1.7453
+We are in epoch (val):  1
+Epoch 1: Avg Val Loss = 5.1008
+Epoch 1: Avg Val MAE = 1.8096
+Validation loss improved, saving best model.
+We are in epoch (training):  2
+Epoch 2: Avg Train Loss = 4.1312
+Epoch 2: Avg Train MAE = 1.5642
+We are in epoch (val):  2
+Epoch 2: Avg Val Loss = 5.1811
+Epoch 2: Avg Val MAE = 1.7926
+No improvement in validation loss for 1 epochs.
+We are in epoch (training):  3
+Epoch 3: Avg Train Loss = 3.3717
+Epoch 3: Avg Train MAE = 1.4319
+We are in epoch (val):  3
+Epoch 3: Avg Val Loss = 5.6467
+Epoch 3: Avg Val MAE = 1.8318
+No improvement in validation loss for 2 epochs.
+We are in epoch (training):  4
+Epoch 4: Avg Train Loss = 3.7221
+Epoch 4: Avg Train MAE = 1.4867
+We are in epoch (val):  4
+Epoch 4: Avg Val Loss = 5.7982
+Epoch 4: Avg Val MAE = 1.8763
+No improvement in validation loss for 3 epochs.
+We are in epoch (training):  5
+Epoch 5: Avg Train Loss = 3.6387
+Epoch 5: Avg Train MAE = 1.4392
+We are in epoch (val):  5
+Epoch 5: Avg Val Loss = 7.0029
+Epoch 5: Avg Val MAE = 1.9385
+No improvement in validation loss for 4 epochs.
+We are in epoch (training):  6
+Epoch 6: Avg Train Loss = 3.8274
+Epoch 6: Avg Train MAE = 1.4906
+We are in epoch (val):  6
+Epoch 6: Avg Val Loss = 4.3554
+Epoch 6: Avg Val MAE = 1.6330
+Validation loss improved, saving best model.
+We are in epoch (training):  7
+Epoch 7: Avg Train Loss = 2.9421
+Epoch 7: Avg Train MAE = 1.2915
+We are in epoch (val):  7
+Epoch 7: Avg Val Loss = 4.4639
+Epoch 7: Avg Val MAE = 1.6345
+No improvement in validation loss for 1 epochs.
+We are in epoch (training):  8
+Epoch 8: Avg Train Loss = 2.8814
+Epoch 8: Avg Train MAE = 1.3067
+We are in epoch (val):  8
+Epoch 8: Avg Val Loss = 4.4687
+Epoch 8: Avg Val MAE = 1.6257
+No improvement in validation loss for 2 epochs.
+We are in epoch (training):  9
+Epoch 9: Avg Train Loss = 2.7553
+Epoch 9: Avg Train MAE = 1.2459
+We are in epoch (val):  9
+Epoch 9: Avg Val Loss = 4.5004
+Epoch 9: Avg Val MAE = 1.5937
+No improvement in validation loss for 3 epochs.
+We are in epoch (training):  10
+Epoch 10: Avg Train Loss = 2.5679
+Epoch 10: Avg Train MAE = 1.2210
+We are in epoch (val):  10
+Epoch 10: Avg Val Loss = 4.7760
+Epoch 10: Avg Val MAE = 1.6585
+No improvement in validation loss for 4 epochs.
+We are in epoch (training):  11
+Epoch 11: Avg Train Loss = 2.4033
+Epoch 11: Avg Train MAE = 1.1707
+We are in epoch (val):  11
+Epoch 11: Avg Val Loss = 4.8797
+Epoch 11: Avg Val MAE = 1.6374
+No improvement in validation loss for 5 epochs.
+We are in epoch (training):  12
+Epoch 12: Avg Train Loss = 2.4795
+Epoch 12: Avg Train MAE = 1.1963
+We are in epoch (val):  12
+Epoch 12: Avg Val Loss = 5.5881
+Epoch 12: Avg Val MAE = 1.7729
+No improvement in validation loss for 6 epochs.
+We are in epoch (training):  13
+Epoch 13: Avg Train Loss = 2.3285
+Epoch 13: Avg Train MAE = 1.1676
+We are in epoch (val):  13
+Epoch 13: Avg Val Loss = 4.7596
+Epoch 13: Avg Val MAE = 1.6207
+No improvement in validation loss for 7 epochs.
+We are in epoch (training):  14
+Epoch 14: Avg Train Loss = 2.3084
+Epoch 14: Avg Train MAE = 1.1513
+We are in epoch (val):  14
+Epoch 14: Avg Val Loss = 4.3757
+Epoch 14: Avg Val MAE = 1.5539
+No improvement in validation loss for 8 epochs.
+We are in epoch (training):  15
+Epoch 15: Avg Train Loss = 2.1600
+Epoch 15: Avg Train MAE = 1.1225
+We are in epoch (val):  15
+Epoch 15: Avg Val Loss = 4.9729
+Epoch 15: Avg Val MAE = 1.6229
+No improvement in validation loss for 9 epochs.
+We are in epoch (training):  16
+Epoch 16: Avg Train Loss = 2.0356
+Epoch 16: Avg Train MAE = 1.0806
+We are in epoch (val):  16
+Epoch 16: Avg Val Loss = 4.4156
+Epoch 16: Avg Val MAE = 1.5898
+No improvement in validation loss for 10 epochs.
+Early stopping triggered after 16 epochs.
+Loaded the best model. Will now calculate predicted values on train and test set.
+Loss plot (Train/Val) saved to: /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed/loss_plot_trainval.png
+We are in test.
+Loaded 405 image pairs.
+Loaded 405 rows of metadata.
+Loaded 405 targets.
+We are in test
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/lib/python3.12/site-packages/torchio/data/image.py:248: UserWarning: Using TorchIO images without a torchio.SubjectsLoader in PyTorch >= 2.3 might have unexpected consequences, e.g., the collated batches will be instances of torchio.Subject with 5D images. Replace your PyTorch DataLoader with a torchio.SubjectsLoader so that the collated batch becomes a dictionary, as expected. See https://github.com/TorchIO-project/torchio/issues/1179 for more context about this issue.
+  warnings.warn(message, stacklevel=1)
+Test Loss (MSE): 3.6451
+Test results saved to /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed/test_predicted_values.csv
+Test MAE: 1.4370

@@ -15,7 +15,7 @@ class Args:
 
 args = Args()
 
-path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/run_after_changes'
+path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed'
 df1 = pd.read_csv(os.path.join(path,'train_dataset.csv'), sep=',')
 df2 = pd.read_csv(os.path.join(path,'val_dataset.csv'), sep=',')
 df3 = pd.read_csv(os.path.join(path,'test_dataset.csv'), sep=',')
@@ -117,7 +117,7 @@ def plot_duration_curves(d1, d2, d3, save_path):
     plt.show()
 
 
-plot_age_histograms(age1, age2, age3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/run_after_changes')
-plot_age_curves(age1, age2, age3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/run_after_changes')
-plot_duration_histograms(duration1, duration2, duration3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/run_after_changes')
-plot_duration_curves(duration1, duration2, duration3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/run_after_changes')
+plot_age_histograms(age1, age2, age3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed')
+plot_age_curves(age1, age2, age3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed')
+plot_duration_histograms(duration1, duration2, duration3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed')
+plot_duration_curves(duration1, duration2, duration3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed')
