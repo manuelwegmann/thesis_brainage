@@ -9,7 +9,7 @@
     "image_channel": 1,
     "val_size": 0.2,
     "test_size": 0.2,
-    "seed": 15,
+    "seed": 20,
     "target_name": "duration",
     "optional_meta": [
         "age",
@@ -27,6 +27,7 @@
     "epoch": 0,
     "save_epoch_num": 1,
     "early_stopping_patience": 10,
+    "folds": 5,
     "output_directory": "/mimer/NOBACKUP/groups/brainage/thesis_brainage/results",
-    "run_name": "test_run"
+    "run_name": "5-fold-cc"
 }

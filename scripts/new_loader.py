@@ -11,7 +11,7 @@ import torchio as tio
 import numpy as np
 import torch
 
-from thesis_brainage.archive.prep_data import add_classification, exclude_CI_participants, exclude_single_scan_participants, check_folders_exist
+from prep_data import add_classification, exclude_CI_participants, exclude_single_scan_participants, check_folders_exist
 
 def load_participants(folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3', clean = True):
     """

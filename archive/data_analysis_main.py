@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from .prep_data import full_data_load, split_by_class, split_by_gender
+from ..scripts.prep_data import full_data_load, split_by_class, split_by_gender
 from .data_analysis_tools import plot_age_histograms, extract_counts_for_mris, basic_duration_analysis, extract_race_counts
 
 df = full_data_load()

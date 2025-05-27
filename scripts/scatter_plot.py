@@ -3,10 +3,10 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/run_after_changes'
+path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cc/5-fold-cc/fold_2'
 train_results = pd.read_csv(os.path.join(path,'train_predicted_values.csv'))
 val_results = pd.read_csv(os.path.join(path,'val_predicted_values.csv'))
-test_results = pd.read_csv(os.path.join(path,'new_test_predicted_values.csv'))
+test_results = pd.read_csv(os.path.join(path,'test_predicted_values.csv'))
 
 #Train plot
 plt.figure(figsize=(6, 6))

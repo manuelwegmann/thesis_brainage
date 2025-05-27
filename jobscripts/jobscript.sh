@@ -14,4 +14,4 @@ source /mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/bin/activate
 
 # execute 
 cd /mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts
-python -u new_run.py --batchsize 16 --early_stopping_patience 10 --seed 22 --run_name 'new_seed' 
+python -u new_run.py --batchsize 16 --early_stopping_patience 10 --seed 20 --run_name '5-fold-cc' --folds 5 

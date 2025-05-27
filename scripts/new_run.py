@@ -5,6 +5,7 @@ import torch
 import numpy as np
 import os
 import json
+import math
 import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
@@ -47,6 +48,7 @@ def parse_args():
     parser.add_argument('--save_epoch_num', default=1, type=int, help="validate and save every N epoch")
     parser.add_argument('--early_stopping_patience', default=10, type=int, help="early stopping patience")
 
+    parser.add_argument('--folds', default=0, type=int, help = "number of folds for k-fold cv. 0 for no cv.")
     parser.add_argument('--output_directory', default='/mimer/NOBACKUP/groups/brainage/thesis_brainage/results', type=str, help="directory path for saving model and outputs")
     parser.add_argument('--run_name', default='test_run', type=str, help="name of the run")
 
@@ -390,6 +392,7 @@ if __name__ == "__main__":
 
     # Parse command line arguments
     opt = parse_args()
+    save_runname = opt.run_name
 
     #create output directory
     output_dir = os.path.join(opt.output_directory, opt.run_name)
@@ -398,12 +401,51 @@ if __name__ == "__main__":
     #save details of run
     save_args_to_json(opt, os.path.join(output_dir,'run_details.json'))
 
-    # Setup data
-    participant_df = load_participants(folder_path = opt.data_directory, clean = opt.clean)
-    train_dataset, val_dataset, test_dataset = split(opt, participant_df, output_dir = output_dir)
+    if opt.folds == 0:
 
-    #train model
-    trained_model = train(opt, train_dataset, val_dataset)
+        # Setup data
+        participant_df = load_participants(folder_path = opt.data_directory, clean = opt.clean)
+        train_dataset, val_dataset, test_dataset = split(opt, participant_df, output_dir = output_dir)
 
-    #test model
-    test(opt, trained_model, test_dataset)
+        #train model
+        trained_model = train(opt, train_dataset, val_dataset)
+
+        #test model
+        test(opt, trained_model, test_dataset)
+
+    else:
+        # Setup data
+        participant_df = load_participants(folder_path = opt.data_directory, clean = opt.clean)
+        main_dataset, test_dataset = train_test_split(participant_df, test_size=0.2, random_state=opt.seed)
+        main_dataset = main_dataset.sample(frac=1, random_state=opt.seed).reset_index(drop=True)
+
+        n = len(main_dataset)
+        fold_size = math.floor(n/opt.folds)
+        folds = []
+
+        for i in range(opt.folds):
+            val_start = i * fold_size
+            val_end = (i + 1) * fold_size if i != opt.folds - 1 else n  # last fold takes the remainder
+
+            fold = main_dataset.iloc[val_start:val_end].reset_index(drop=True)
+            folds.append(fold)
+
+        for i in range(opt.folds):
+            val_fold = folds[i]
+            train_folds = folds[:i] + folds[i+1:]
+            train_fold = pd.concat(train_folds).reset_index(drop=True)
+            opt.output_directory = os.path.join(output_dir,save_runname)
+            opt.run_name = f"fold_{i}"
+            os.makedirs(os.path.join(opt.output_directory, opt.run_name),exist_ok=True)
+            print("Output directory:", opt.output_directory)
+            print("Run name:", opt.run_name)
+            train_fold.to_csv((os.path.join(opt.output_directory, opt.run_name, 'train_fold.csv')), index=False)
+            val_fold.to_csv((os.path.join(opt.output_directory, opt.run_name, 'val_fold.csv')), index=False)
+            test_dataset.to_csv((os.path.join(opt.output_directory, opt.run_name, 'test_dataset.csv')), index=False)
+
+
+            trained_model = train(opt, train_fold, val_fold)
+            test(opt, trained_model, test_dataset)
+            
+
+

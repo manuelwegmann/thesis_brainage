@@ -1,4 +1,4 @@
-from thesis_brainage.archive.prep_data import full_data_load
+from prep_data import full_data_load
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
@@ -44,9 +44,11 @@ loss_test = np.mean((d2['duration'] - naive_pred)**2)
 print(f"Naive model (average) prediction: {naive_pred}") #4.71
 print(f"Naive model (average) loss (train): {loss_train}") #9.20
 print(f"Naive model (average) loss (test): {loss_test}") #9.12
+print(f"Naive model (average) MAE (test):", f"{np.mean(np.abs(d2['duration'] - naive_pred))}") #2.47
 MAE = np.mean(np.abs(d2['duration']-naive_pred))
 print(f"MAE: {MAE}")
 loss0_train = np.mean((d1['duration'])**2)
 loss0_test = np.mean((d2['duration'])**2)
 print(f"Naive model (zero) loss (train): {loss0_train}") #31.38
 print(f"Naive model (zero) loss (test): {loss0_test}") #32.24
+print(f"Naive model (zero) MAE (test): {np.mean(np.abs(d2['duration']))}") #4.81
