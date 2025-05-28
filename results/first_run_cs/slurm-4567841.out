@@ -1,0 +1,68 @@
+This job can be monitored from: https://job.c3se.chalmers.se/alvis/4567841
+We are in main.
+Warning: Folder for participant sub-OAS30937 does not exist and will be deleted.
+Warning: Folder for participant sub-OAS31357 does not exist and will be deleted.
+Train size (number of participants): 592, Validation size: 198, Test size: 198
+We are in train.
+Using device: cuda
+Last block has number of input channels: 64
+Last block has number of output channels: 16
+Loaded 297 images.
+Loaded 297 rows of metadata.
+Loaded 297 targets.
+Loaded 103 images.
+Loaded 103 rows of metadata.
+Loaded 103 targets.
+We are in epoch (training):  0
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/lib/python3.12/site-packages/torchio/data/image.py:248: UserWarning: Using TorchIO images without a torchio.SubjectsLoader in PyTorch >= 2.3 might have unexpected consequences, e.g., the collated batches will be instances of torchio.Subject with 5D images. Replace your PyTorch DataLoader with a torchio.SubjectsLoader so that the collated batch becomes a dictionary, as expected. See https://github.com/TorchIO-project/torchio/issues/1179 for more context about this issue.
+  warnings.warn(message, stacklevel=1)
+Epoch 0: Avg Train Loss = 1833.3612
+Epoch 0: Avg Train MAE = 37.4548
+We are in epoch (val):  0
+Epoch 0: Avg Val Loss = 438.7351
+Epoch 0: Avg Val MAE = 18.6913
+Validation loss improved, saving best model.
+We are in epoch (training):  1
+Epoch 1: Avg Train Loss = 308.1298
+Epoch 1: Avg Train MAE = 13.9851
+We are in epoch (val):  1
+Epoch 1: Avg Val Loss = 362.4894
+Epoch 1: Avg Val MAE = 16.6401
+Validation loss improved, saving best model.
+We are in epoch (training):  2
+Epoch 2: Avg Train Loss = 241.0982
+Epoch 2: Avg Train MAE = 12.5027
+We are in epoch (val):  2
+Epoch 2: Avg Val Loss = 454.6937
+Epoch 2: Avg Val MAE = 18.6245
+No improvement in validation loss for 1 epochs.
+We are in epoch (training):  3
+Epoch 3: Avg Train Loss = 209.3031
+Epoch 3: Avg Train MAE = 11.7007
+We are in epoch (val):  3
+Epoch 3: Avg Val Loss = 118.4920
+Epoch 3: Avg Val MAE = 8.3944
+Validation loss improved, saving best model.
+We are in epoch (training):  4
+Epoch 4: Avg Train Loss = 191.1875
+Epoch 4: Avg Train MAE = 10.7569
+We are in epoch (val):  4
+Epoch 4: Avg Val Loss = 143.2146
+Epoch 4: Avg Val MAE = 9.9011
+No improvement in validation loss for 1 epochs.
+We are in epoch (training):  5
+Epoch 5: Avg Train Loss = 181.8161
+Epoch 5: Avg Train MAE = 10.6342
+We are in epoch (val):  5
+Epoch 5: Avg Val Loss = 164.9657
+Epoch 5: Avg Val MAE = 10.4318
+No improvement in validation loss for 2 epochs.
+We are in epoch (training):  6
+Epoch 6: Avg Train Loss = 202.5834
+Epoch 6: Avg Train MAE = 11.4480
+We are in epoch (val):  6
+Epoch 6: Avg Val Loss = 93.0278
+Epoch 6: Avg Val MAE = 7.6358
+Validation loss improved, saving best model.
+We are in epoch (training):  7
+slurmstepd: error: *** JOB 4567841 ON alvis1-05 CANCELLED AT 2025-05-28T11:09:22 ***

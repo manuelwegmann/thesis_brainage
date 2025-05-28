@@ -1,5 +1,5 @@
-from loader import loader3D, load_participants
-from LILAC import LILAC
+from loader_cs import loader3D, load_participants
+from cs_cnn import CS_CNN3D
 
 import torch
 import numpy as np
@@ -29,8 +29,8 @@ def parse_args():
     parser.add_argument('--seed', default=15, type=int)
 
     #target and optional meta data arguments
-    parser.add_argument('--target_name', default='duration', type=str, help="name of the target variable")
-    parser.add_argument('--optional_meta', nargs='+', default=['age', 'sex_F', 'sex_M'], help="List of optional meta to be used in the model")
+    parser.add_argument('--target_name', default='age', type=str, help="name of the target variable")
+    parser.add_argument('--optional_meta', nargs='+', default=['sex_F', 'sex_M'], help="List of optional meta to be used in the model")
     
     #model architecture arguments
     parser.add_argument('--n_of_blocks', default=4, type=int, help="number of blocks in the encoder")
@@ -107,7 +107,7 @@ def train(opt, train_dataset, val_dataset):
     print(f"Using device: {device}")
 
     # Model, Loss, Optimizer
-    model = LILAC(opt).to(device)
+    model = CS_CNN3D(opt).to(device)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=opt.lr)
 
@@ -134,20 +134,19 @@ def train(opt, train_dataset, val_dataset):
 
         for batch in dataloader_train:
             # Unpack batch
-            if len(batch) == 3:
-                x1, x2, target = batch
+            if len(batch) == 2:
+                x, target = batch
                 meta = None
             else:
-                x1, x2, meta, target = batch
+                x, meta, target = batch
                 meta = meta.float().to(device)
 
             # Move tensors to device
-            x1 = x1.float().to(device)
-            x2 = x2.float().to(device)
+            x = x.float().to(device)
             target = target.to(device).float()
 
             # Forward pass
-            output = model(x1, x2, meta)
+            output = model(x, meta)
             loss = criterion(output, target)
 
             #calculate MAE
@@ -178,20 +177,19 @@ def train(opt, train_dataset, val_dataset):
 
         with torch.no_grad():
             for batch in dataloader_val:
-                if len(batch) == 3:
-                    x1, x2, target = batch
+                if len(batch) == 2:
+                    x, target = batch
                     meta = None
                 else:
-                    x1, x2, meta, target = batch
+                    x, meta, target = batch
                     meta = meta.float().to(device)
 
                 # Move tensors to device
-                x1 = x1.float().to(device)
-                x2 = x2.float().to(device)
+                x = x.float().to(device)
                 target = target.to(device).float()
 
                 # Forward pass
-                output = model(x1, x2, meta)
+                output = model(x, meta)
                 val_loss = criterion(output, target)
                 total_val_loss += val_loss.item()
 
@@ -249,35 +247,33 @@ def train(opt, train_dataset, val_dataset):
 
         with torch.no_grad():
             for batch in dataloader_train:
-                if len(batch) == 3:
-                    x1, x2, target = batch
+                if len(batch) == 2:
+                    x, target = batch
                     meta = None
                 else:
-                    x1, x2, meta, target = batch
+                    x, meta, target = batch
                     meta = meta.float().to(device)
 
-                x1 = x1.float().to(device)
-                x2 = x2.float().to(device)
+                x = x.float().to(device)
                 target = target.to(device).float()
 
-                output = model(x1, x2, meta)
+                output = model(x, meta)
 
                 train_preds.append(output.cpu())
                 train_targets.append(target.cpu())
 
             for batch in dataloader_val:
-                if len(batch) == 3:
-                    x1, x2, target = batch
+                if len(batch) == 2:
+                    x, target = batch
                     meta = None
                 else:
-                    x1, x2, meta, target = batch
+                    x, meta, target = batch
                     meta = meta.float().to(device)
 
-                x1 = x1.float().to(device)
-                x2 = x2.float().to(device)
+                x = x.float().to(device)
                 target = target.to(device).float()
 
-                output = model(x1, x2, meta)
+                output = model(x, meta)
 
                 val_preds.append(output.cpu())
                 val_targets.append(target.cpu())
@@ -349,18 +345,17 @@ def test(opt, model, test_dataset):
 
     with torch.no_grad():
         for batch in dataloader_test:
-            if len(batch) == 3:
-                x1, x2, target = batch
+            if len(batch) == 2:
+                x, target = batch
                 meta = None
             else:
-                x1, x2, meta, target = batch
+                x, meta, target = batch
                 meta = meta.float().to(device)
 
-            x1 = x1.float().to(device)
-            x2 = x2.float().to(device)
+            x = x.float().to(device)
             target = target.float().to(device)
 
-            output = model(x1, x2, meta)
+            output = model(x, meta)
             loss = criterion(output, target)
             total_loss += loss.item()
 

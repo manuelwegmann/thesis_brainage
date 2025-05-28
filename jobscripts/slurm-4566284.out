@@ -470,3 +470,108 @@ Epoch 9: Avg Val Loss = 4.1013
 Epoch 9: Avg Val MAE = 1.5453
 No improvement in validation loss for 1 epochs.
 We are in epoch (training):  10
+Epoch 10: Avg Train Loss = 2.6188
+Epoch 10: Avg Train MAE = 1.2568
+We are in epoch (val):  10
+Epoch 10: Avg Val Loss = 3.9978
+Epoch 10: Avg Val MAE = 1.5479
+No improvement in validation loss for 2 epochs.
+We are in epoch (training):  11
+Epoch 11: Avg Train Loss = 2.3112
+Epoch 11: Avg Train MAE = 1.1840
+We are in epoch (val):  11
+Epoch 11: Avg Val Loss = 4.3863
+Epoch 11: Avg Val MAE = 1.6411
+No improvement in validation loss for 3 epochs.
+We are in epoch (training):  12
+Epoch 12: Avg Train Loss = 2.1749
+Epoch 12: Avg Train MAE = 1.1578
+We are in epoch (val):  12
+Epoch 12: Avg Val Loss = 4.1824
+Epoch 12: Avg Val MAE = 1.5851
+No improvement in validation loss for 4 epochs.
+We are in epoch (training):  13
+Epoch 13: Avg Train Loss = 2.2772
+Epoch 13: Avg Train MAE = 1.1599
+We are in epoch (val):  13
+Epoch 13: Avg Val Loss = 3.9196
+Epoch 13: Avg Val MAE = 1.4863
+Validation loss improved, saving best model.
+We are in epoch (training):  14
+Epoch 14: Avg Train Loss = 2.3184
+Epoch 14: Avg Train MAE = 1.1789
+We are in epoch (val):  14
+Epoch 14: Avg Val Loss = 4.0327
+Epoch 14: Avg Val MAE = 1.5783
+No improvement in validation loss for 1 epochs.
+We are in epoch (training):  15
+Epoch 15: Avg Train Loss = 2.1861
+Epoch 15: Avg Train MAE = 1.1487
+We are in epoch (val):  15
+Epoch 15: Avg Val Loss = 3.4035
+Epoch 15: Avg Val MAE = 1.4016
+Validation loss improved, saving best model.
+We are in epoch (training):  16
+Epoch 16: Avg Train Loss = 2.0093
+Epoch 16: Avg Train MAE = 1.0924
+We are in epoch (val):  16
+Epoch 16: Avg Val Loss = 3.9222
+Epoch 16: Avg Val MAE = 1.5471
+No improvement in validation loss for 1 epochs.
+We are in epoch (training):  17
+Epoch 17: Avg Train Loss = 1.8713
+Epoch 17: Avg Train MAE = 1.0641
+We are in epoch (val):  17
+Epoch 17: Avg Val Loss = 3.5230
+Epoch 17: Avg Val MAE = 1.4140
+No improvement in validation loss for 2 epochs.
+We are in epoch (training):  18
+Epoch 18: Avg Train Loss = 1.6704
+Epoch 18: Avg Train MAE = 1.0174
+We are in epoch (val):  18
+Epoch 18: Avg Val Loss = 3.5976
+Epoch 18: Avg Val MAE = 1.4381
+No improvement in validation loss for 3 epochs.
+We are in epoch (training):  19
+Epoch 19: Avg Train Loss = 1.7439
+Epoch 19: Avg Train MAE = 1.0281
+We are in epoch (val):  19
+Epoch 19: Avg Val Loss = 3.5923
+Epoch 19: Avg Val MAE = 1.4141
+No improvement in validation loss for 4 epochs.
+We are in epoch (training):  20
+Epoch 20: Avg Train Loss = 1.7432
+Epoch 20: Avg Train MAE = 1.0293
+We are in epoch (val):  20
+Epoch 20: Avg Val Loss = 3.5383
+Epoch 20: Avg Val MAE = 1.4012
+No improvement in validation loss for 5 epochs.
+We are in epoch (training):  21
+Epoch 21: Avg Train Loss = 1.5638
+Epoch 21: Avg Train MAE = 0.9703
+We are in epoch (val):  21
+Epoch 21: Avg Val Loss = 3.2571
+Epoch 21: Avg Val MAE = 1.3497
+Validation loss improved, saving best model.
+We are in epoch (training):  22
+Epoch 22: Avg Train Loss = 1.7856
+Epoch 22: Avg Train MAE = 1.0317
+We are in epoch (val):  22
+Epoch 22: Avg Val Loss = 3.4997
+Epoch 22: Avg Val MAE = 1.4174
+No improvement in validation loss for 1 epochs.
+We are in epoch (training):  23
+Epoch 23: Avg Train Loss = 1.4864
+Epoch 23: Avg Train MAE = 0.9609
+We are in epoch (val):  23
+Epoch 23: Avg Val Loss = 3.9249
+Epoch 23: Avg Val MAE = 1.4823
+No improvement in validation loss for 2 epochs.
+We are in epoch (training):  24
+Epoch 24: Avg Train Loss = 1.4710
+Epoch 24: Avg Train MAE = 0.9520
+We are in epoch (val):  24
+Epoch 24: Avg Val Loss = 3.8607
+Epoch 24: Avg Val MAE = 1.4376
+No improvement in validation loss for 3 epochs.
+We are in epoch (training):  25

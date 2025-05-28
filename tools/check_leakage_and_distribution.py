@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from new_loader import loader3D
+from loader import loader3D
 
 class Args:
     data_directory = '/mimer/NOBACKUP/groups/brainage/data/oasis3'  # Replace with your actual path
@@ -15,9 +15,9 @@ class Args:
 
 args = Args()
 
-path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed'
-df1 = pd.read_csv(os.path.join(path,'train_dataset.csv'), sep=',')
-df2 = pd.read_csv(os.path.join(path,'val_dataset.csv'), sep=',')
+path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_0'
+df1 = pd.read_csv(os.path.join(path,'train_fold.csv'), sep=',')
+df2 = pd.read_csv(os.path.join(path,'val_fold.csv'), sep=',')
 df3 = pd.read_csv(os.path.join(path,'test_dataset.csv'), sep=',')
 
 ids1 = df1['participant_id'].unique()
@@ -117,7 +117,7 @@ def plot_duration_curves(d1, d2, d3, save_path):
     plt.show()
 
 
-plot_age_histograms(age1, age2, age3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed')
-plot_age_curves(age1, age2, age3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed')
-plot_duration_histograms(duration1, duration2, duration3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed')
-plot_duration_curves(duration1, duration2, duration3, save_path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/new_seed')
+plot_age_histograms(age1, age2, age3, save_path = path)
+plot_age_curves(age1, age2, age3, save_path = path)
+plot_duration_histograms(duration1, duration2, duration3, save_path = path)
+plot_duration_curves(duration1, duration2, duration3, save_path = path)

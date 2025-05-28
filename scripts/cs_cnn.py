@@ -1,10 +1,6 @@
 import torch.nn as nn
 import torch
 
-"""
-Further improvements to do: make padding dynamic
-"""
-
 class EncoderBlock3D(nn.Module):
 
     def __init__(self, in_num_ch, out_num_ch, kernel_size=3, conv_act='leaky_relu', dropout=0, pooling=nn.AvgPool3d):
@@ -68,7 +64,19 @@ class Encoder3D(nn.Module):
         return x
     
 
-class CNNbasic3D(nn.Module): #todo: add conv_act and dropout arguments
+class CNNbasic3D(nn.Module):
+    """
+    Args:
+        image_size: desired size of the input image
+        image_channel: number of channels in the input image
+        n_of_blocks: number of convolutional blocks
+        initial_channel: number of feature maps after first and last conv block
+        kernel_size: size of the convolutional kernel
+        conv_act: activation function for the convolutional layers
+        dropout: dropout rate for the convolutional layers
+        pooling: pooling function (e.g., nn.AvgPool3d)
+        optional_meta: additional features to be used in the linear layer
+    """
     def __init__(self, inputsize = [128,128,128], channels = 1, n_of_blocks = 4, initial_channel = 16, kernel_size = 3, conv_act = 'leaky_relu', dropout = 0, pooling = nn.AvgPool3d, additional_feature = 0):
         super(CNNbasic3D, self).__init__()
 
@@ -95,7 +103,7 @@ def get_backbone(args = None):
     
 
 
-class LILAC(nn.Module):
+class CS_CNN3D(nn.Module):
     """
     Args:
         image_size: desired size of the input image
@@ -113,8 +121,8 @@ class LILAC(nn.Module):
         self.backbone, self.linear = get_backbone(args)
         self.optional_meta = len(args.optional_meta)>0
 
-    def forward(self, x1, x2, meta = None):
-        f = self.backbone(x2) - self.backbone(x1)
+    def forward(self, x, meta = None):
+        f = self.backbone(x)
         if not self.optional_meta:
             return self.linear(f)
         else:

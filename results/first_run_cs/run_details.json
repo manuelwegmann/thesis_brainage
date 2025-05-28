@@ -10,9 +10,8 @@
     "val_size": 0.2,
     "test_size": 0.2,
     "seed": 20,
-    "target_name": "duration",
+    "target_name": "age",
     "optional_meta": [
-        "age",
         "sex_F",
         "sex_M"
     ],
@@ -27,7 +26,7 @@
     "epoch": 0,
     "save_epoch_num": 1,
     "early_stopping_patience": 10,
-    "folds": 5,
+    "folds": 0,
     "output_directory": "/mimer/NOBACKUP/groups/brainage/thesis_brainage/results",
-    "run_name": "5-fold-cv_w_age_dropout"
+    "run_name": "first_run_cs"
 }

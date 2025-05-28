@@ -3,7 +3,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cc/5-fold-cc/fold_2'
+path = '/mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_0'
 train_results = pd.read_csv(os.path.join(path,'train_predicted_values.csv'))
 val_results = pd.read_csv(os.path.join(path,'val_predicted_values.csv'))
 test_results = pd.read_csv(os.path.join(path,'test_predicted_values.csv'))
@@ -58,12 +58,5 @@ plt.show()
 plot_path = os.path.join(path, 'test_pred_target.png')
 plt.savefig(plot_path)
 plt.close()
-
-
-alt_test_results = pd.read_csv(os.path.join(path,'test_predicted_values.csv'))
-original_mse = np.mean((test_results['Prediction'] - test_results['Target'])**2)
-alt_mse = np.mean((alt_test_results['Prediction'] - alt_test_results['Target'])**2)
-print("Test MSE after rerun: ", original_mse)
-print("Test MSE before rerun: ", alt_mse)
 
 
