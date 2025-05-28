@@ -1,0 +1,32 @@
+{
+    "data_directory": "/mimer/NOBACKUP/groups/brainage/data/oasis3",
+    "clean": true,
+    "image_size": [
+        128,
+        128,
+        128
+    ],
+    "image_channel": 1,
+    "val_size": 0.2,
+    "test_size": 0.2,
+    "seed": 20,
+    "target_name": "duration",
+    "optional_meta": [
+        "sex_F",
+        "sex_M"
+    ],
+    "n_of_blocks": 4,
+    "initial_channel": 16,
+    "kernel_size": 3,
+    "conv_act": "leaky_relu",
+    "dropout": 0.2,
+    "lr": 0.001,
+    "batchsize": 16,
+    "max_epoch": 300,
+    "epoch": 0,
+    "save_epoch_num": 1,
+    "early_stopping_patience": 10,
+    "folds": 5,
+    "output_directory": "/mimer/NOBACKUP/groups/brainage/thesis_brainage/results",
+    "run_name": "5-fold-cv_wo_age_dropout"
+}

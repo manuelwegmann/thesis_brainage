@@ -63,7 +63,7 @@ def add_duration(df, folder_path='/mimer/NOBACKUP/groups/brainage/data/oasis3'):
 
 
 #check the whole dataset if any folders with data are missing
-def check_folders_exist(df, folder_path):
+def check_folders_exist(df, folder_path = '/mimer/NOBACKUP/groups/brainage/data/oasis3'):
     checked_df = df
     for participant_id in checked_df['participant_id']:
         if os.path.exists(os.path.join(folder_path, str(participant_id))) == False:

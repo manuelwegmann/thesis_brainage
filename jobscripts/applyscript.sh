@@ -2,7 +2,7 @@
 
 #SBATCH -A NAISS2025-22-353     # project ID found via "projinfo"
 #SBATCH -p alvis                # what partition to use (usually not necessary)
-#SBATCH -t 47:59:59          # how long time it will take to run
+#SBATCH -t 02:00:00           # how long time it will take to run
 #SBATCH --gpus-per-node=A40:1    # choosing no. GPUs and their type
 
 # load modules
@@ -14,4 +14,4 @@ source /mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/bin/activate
 
 # execute 
 cd /mimer/NOBACKUP/groups/brainage/thesis_brainage/scripts
-python -u run_LILAC.py --batchsize 16 --early_stopping_patience 10 --seed 20 --run_name '5-fold-cv_w_age_dropout' --folds 5 --dropout 0.2
+python -u apply_model.py --run_name 'CI participants'

@@ -1,0 +1,44 @@
+This job can be monitored from: https://job.c3se.chalmers.se/alvis/4567481
+We are in main.
+Warning: Folder for participant sub-OAS30937 does not exist and will be deleted.
+Warning: Folder for participant sub-OAS31357 does not exist and will be deleted.
+Size of main data: 404
+Size of test data: 102
+We are in fold: 0
+We are in train.
+Using device: cuda
+Last block has number of input channels: 64
+Last block has number of output channels: 16
+Warning: No matching T1w image found for sub-OAS30659 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30659 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30369 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30042 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30797 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30797 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30797 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30137 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30137 in session(s). Skipping.
+Loaded 1435 image pairs.
+Loaded 1435 rows of metadata.
+Loaded 1435 targets.
+Warning: No matching T1w image found for sub-OAS30643 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30643 in session(s). Skipping.
+Warning: No matching T1w image found for sub-OAS30643 in session(s). Skipping.
+Loaded 397 image pairs.
+Loaded 397 rows of metadata.
+Loaded 397 targets.
+We are in epoch (training):  0
+/mimer/NOBACKUP/groups/brainage/thesis_brainage/my_venv/lib/python3.12/site-packages/torchio/data/image.py:248: UserWarning: Using TorchIO images without a torchio.SubjectsLoader in PyTorch >= 2.3 might have unexpected consequences, e.g., the collated batches will be instances of torchio.Subject with 5D images. Replace your PyTorch DataLoader with a torchio.SubjectsLoader so that the collated batch becomes a dictionary, as expected. See https://github.com/TorchIO-project/torchio/issues/1179 for more context about this issue.
+  warnings.warn(message, stacklevel=1)
+Epoch 0: Avg Train Loss = 26.1637
+Epoch 0: Avg Train MAE = 4.2744
+We are in epoch (val):  0
+Epoch 0: Avg Val Loss = 25.9251
+Epoch 0: Avg Val MAE = 4.2858
+Validation loss improved, saving best model.
+We are in epoch (training):  1
