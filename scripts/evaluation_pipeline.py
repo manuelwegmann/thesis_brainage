@@ -17,11 +17,12 @@ def parse_args():
 
 
 def decide_type_of_result(filepath):
-    if 'train' in filepath.lower():
+    print("Filename (results): ", filepath)
+    if 'train_pred' in filepath.lower():
         name = 'train'
-    elif 'val' in filepath.lower():
+    elif 'val_pred' in filepath.lower():
         name = 'val'
-    elif 'test' in filepath.lower():
+    elif 'test_pred' in filepath.lower():
         name = 'test'
     else:
         print("Error in naming of file.")
@@ -83,9 +84,3 @@ if __name__ == "__main__":
 
     #save results stored in dataframe
     df.to_csv(os.path.join(save_path, f'{name}_evaluation.csv'), index=False)
-
-
-
-
-
-

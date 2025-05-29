@@ -1,0 +1,14 @@
+This job can be monitored from: https://job.c3se.chalmers.se/alvis/4571334
+Filepath with predicted values:,  /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_0/test_predicted_values.csv
+We are looking at test results.
+Evaluation results will be saved to  /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_0/results_test
+Filepath with predicted values:,  /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_1/train_predicted_values.csv
+We are looking at train results.
+Evaluation results will be saved to  /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_1/results_train
+Filepath with predicted values:,  /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_1/val_predicted_values.csv
+We are looking at val results.
+Evaluation results will be saved to  /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_1/results_val
+Filepath with predicted values:,  /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_1/test_predicted_values.csv
+We are looking at test results.
+slurmstepd: error: *** JOB 4571334 ON alvis2-06 CANCELLED AT 2025-05-29T10:58:58 ***
+Evaluation results will be saved to  /mimer/NOBACKUP/groups/brainage/thesis_brainage/results/5-fold-cv_wo_age/5-fold-cv_wo_age/fold_1/results_test
